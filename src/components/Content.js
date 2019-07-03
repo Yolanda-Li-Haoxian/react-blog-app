@@ -8,33 +8,42 @@ import CreateArticle from './CreateArticle';
 import Article from './Article';
 import BlogList from './BlogList';
 var blogs = [
-    {author:'lhx',date:'2019.6.27',title:'gggggggg'},
-    {author:'hx1',date:'2019.6.28',title:'nnnnnnnn'}
-]
+    {author:'lhx',date:'2019.6.27',title:'title1',value:'value1'},
+    {author:'hx1',date:'2019.6.28',title:'title2',value:'value2'}
+];
 class Content extends Component {
     constructor(props){
         super(props);
         this.state = {
             value :null,
-            showCreate : false,
+            editMode : false,
             blogs:blogs
         }
     }
-    updateArticle = (value,title)=>{
-        blogs.push({title:title, value:value,author:'lhxxx',date:new Date().toLocaleString()});
+    onEdit =(blog)=>{
+        this.setState({
+            value:blog.value,
+            editMode:true
+        });
+    };
+    onSave = (value,title)=>{
+        Content.addToList(value,title);
         this.setState({
             blogs,
             value,
-            showCreate:false
+            editMode:false
         });
+    };
+    static addToList(value,title){
+        blogs.push({title:title, value:value,author:'lhxxx',date:new Date().toLocaleString()});
     }
 
     componentDidMount(){
         // 声明一个自定义事件
         // 在组件装载完成以后
-        this.eventCreateEmitter = emitter.addListener("create", (msg)=> {
+        this.eventCreateEmitter = emitter.on("create", ()=> {
             this.setState({
-                showCreate: true,
+                editMode: true,
                 value:''
             })
         });
@@ -48,11 +57,11 @@ class Content extends Component {
             <Container>
                 <Row>
                     <Col sm={8} className="left-pan">
-                        { this.state.showCreate ? <CreateArticle updateArticle={this.updateArticle}/> : <Article value={this.state.value}/> }
+                        { this.state.editMode ? (<CreateArticle onSave={this.onSave} value={this.state.value}/>) : (<Article value={this.state.value}/>) }
                     </Col>
                     <Col sm={4} className="right-pan">
                         <h1>All Blogs</h1>
-                        <BlogList blogs={this.state.blogs}/>
+                        <BlogList blogs={this.state.blogs} onEdit={this.onEdit}/>
                     </Col>
                 </Row>
             </Container>

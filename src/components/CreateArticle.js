@@ -2,37 +2,48 @@
  * Created by lihaoxian on 2019/6/25.
  */
 import React, {Component} from 'react';
-import emitter from '../events';
 // import {Container,Row,Col} from 'react-bootstrap';
 import Editor from 'for-editor';
+
 class CreateArticle extends Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         this.state = {
-            title:'',
-            value :''
+            value: this.props.value
         }
     }
+
     handleChange(value) {
         this.setState({
             value
         })
     }
-    onSave(){
+    componentWillReceiveProps(nextProps, nextContext) {
+        this.setState({value:nextProps.value});
+    }
+
+    onSave(value) {
+        const title = this.getTitle();
+
+        // let texts = value.replace(/[\n\r]/g, '<br>');
+        this.props.onSave(value, title);
+    }
+
+    getTitle() {
         const value = this.state.value;
         let title = '';
-        let index = value.indexOf('\n');
+        let index = value.indexOf(' ');
         if (index > 0) {
-            title = value.slice(0, index)
+            title = value.slice(index + 1)
         }
-        let texts= value.replace(/[\n\r]/g,'<br>');
-        return this.props.updateArticle(texts, title);
+        return title;
     }
-    render(){
-        const {value } = this.state;
+
+    render() {
         return (
-            <Editor value={value} onChange={this.handleChange.bind(this)} onSave={this.onSave.bind(this)}/>
+            <Editor value={this.state.value} onChange={this.handleChange.bind(this)} onSave={this.onSave.bind(this)}/>
         )
     }
 }
+
 export default CreateArticle;

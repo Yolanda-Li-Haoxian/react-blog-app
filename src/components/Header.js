@@ -6,7 +6,7 @@ import {Navbar,Nav,NavDropdown,Form,FormControl, Button} from 'react-bootstrap';
 import emitter from '../events';
 
 class Header extends Component {
-    handleCreate(){
+    handleCreate (){
         emitter.emit('create','hello')
     }
     render() {
@@ -25,7 +25,7 @@ class Header extends Component {
                             <NavDropdown.Divider />
                             <NavDropdown.Item href="#action/3.4">Separated link</NavDropdown.Item>
                         </NavDropdown>
-                        <Button onClick={()=>this.handleCreate()}>Create</Button>
+                        <Button onClick={this.handleCreate.bind(this)}>Create</Button>
                     </Nav>
 
                     <Form inline>

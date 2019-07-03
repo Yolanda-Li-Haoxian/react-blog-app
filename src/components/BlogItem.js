@@ -2,7 +2,6 @@
  * Created by lihaoxian on 2019/6/27.
  */
 import React, {Component} from 'react';
-import {Container,Row,Col} from 'react-bootstrap';
 import '../styles/blog-item.css';
 class BlogItem extends Component {
     constructor(props){
@@ -11,20 +10,19 @@ class BlogItem extends Component {
             title:''
         }
     }
-    onRemove(index){
-        return this.props.removeBlogItem(index);
-    }
+
     render(){
+        const {title,author,date}=this.props.children;
         return (
             <div className="blog-item">
-                <div>
-                    <h5>{this.props.title}</h5>
+                <div className="item-div" onClick={this.props.onEdit}>
+                    <h5>{title}</h5>
                     <div>
-                        <span>{this.props.author}</span>
-                        <span className="item-date">{this.props.date}</span>
+                        <span>{author}</span>
+                        <span className="item-date">{date}</span>
                     </div>
                 </div>
-                <a className="close close-icon" onClick={this.onRemove.bind(this,this.props.index)}>&times;</a>
+                <a className="close close-icon" onClick={this.props.onRemove}>&times;</a>
             </div>
         )
     }

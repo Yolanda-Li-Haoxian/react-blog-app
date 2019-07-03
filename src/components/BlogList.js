@@ -2,37 +2,41 @@
  * Created by lihaoxian on 2019/6/27.
  */
 import React, {Component} from 'react';
-import {Container,Row,Col} from 'react-bootstrap';
 import BlogItem from './BlogItem';
 class BlogList extends Component {
     constructor(props){
         super(props);
+        const blogs = this.props.blogs;
         this.state = {
-            blogs:this.props.blogs
+            blogs: blogs
         }
     }
 
-    removeBlogItem = (index) => {
-        this.state.blogs.splice(index, 1);
+    onRemove (index) {
+        const newBlogs = this.state.blogs.slice();
+        newBlogs.splice(index, 1);
         this.setState({
-            blogs:this.state.blogs
+            blogs: newBlogs
         });
     }
-    render(){
-        var blogItem = this.state.blogs.map((item,index)=> {
-            return <BlogItem key={'blog-' + index}
-                             index={index}
-                             author={item.author}
-                             date={item.date}
-                             value={item.value}
-                             title={item.title}
-                             removeBlogItem={this.removeBlogItem}/>
+    onEdit (blog){
+        this.props.onEdit(blog);
+    }
+
+
+    render() {
+        let blogItem = this.state.blogs.map((item, index) => {
+            return <BlogItem key={'blog-' + index} onRemove={this.onRemove.bind(this,index)} onEdit={this.onEdit.bind(this,item)}>{item}</BlogItem>
         });
         return (
-            <div>
+            <>
                 {blogItem}
-            </div>
+            </>
         )
     }
+
+
 }
+
 export default BlogList;
+

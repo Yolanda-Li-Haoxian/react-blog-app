@@ -2,24 +2,20 @@
     height: 100%;
 }
 
-.App {
-    /*text-align: center;*/
-    height: 100%;
-}
-.App .container {
+.container {
     height: calc(100% - 56px);
 }
-.App .container .row {
+.container .row {
     height: 100%;
 }
-.App .container .row .for-container {
+.container .row .for-container {
     height: 100%;
 }
-.App .container .row .right-pan{
+.container .row .right-pan{
     background-color: #f4f5f7;
     border-color: #f4f5f7;
 }
-.App .container .row .left-pan{
+.container .row .left-pan{
     background-color: #fcfcfc;
 }
 
