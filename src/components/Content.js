@@ -19,7 +19,8 @@ class Content extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            value: null,
+            value: '',
+            title:'',
             preview: true,
             blogs: blogs
         }
@@ -30,6 +31,7 @@ class Content extends Component {
         blogIndex = index;
         this.setState({
             value: blog.value,
+            title:blog.title,
             preview: false
         });
     };
@@ -38,6 +40,7 @@ class Content extends Component {
         this.setState({
             blogs,
             value,
+            title,
             preview: true
         });
     };
@@ -57,7 +60,8 @@ class Content extends Component {
             editMode = false;
             this.setState({
                 preview: false,
-                value: ''
+                value: '',
+                title:''
             })
         });
     }
@@ -68,13 +72,13 @@ class Content extends Component {
     }
 
     render() {
-        const {preview, value, blogs} = this.state;
+        const {preview, value,title, blogs} = this.state;
         return (
             <Container>
                 <Row>
                     <Col sm={8} className="left-pan">
-                        {!preview ? (<CreateArticle onSave={this.onSave} value={value}/>) : (
-                            <Article value={value}/>)}
+                        {!preview ? (<CreateArticle onSave={this.onSave} value={value} title={title}/>) : (
+                            <Article value={value} title={title}/>)}
                     </Col>
                     <Col sm={4} className="right-pan">
                         <h1>All Blogs</h1>

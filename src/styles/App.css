@@ -18,6 +18,19 @@
 .container .row .left-pan{
     background-color: #fcfcfc;
 }
+.container .row .left-pan .title-input {
+    border-color: transparent;
+    text-align: center;
+    color: #0069d9;
+    font-weight: bold;
+}
+.container .row .left-pan .title-input:hover{
+    border-color: #ced4da;
+}
+.container .row .left-pan .title-input:focus{
+    border-color: #ced4da;
+    box-shadow: none;
+}
 
 
 .App-logo {

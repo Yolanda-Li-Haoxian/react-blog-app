@@ -8,22 +8,38 @@ import Editor from 'for-editor';
 class CreateArticle extends Component {
     constructor(props) {
         super(props);
+        const {value, title} = this.props;
         this.state = {
-            value: this.props.value
+            value,
+            title
         }
     }
 
-    handleChange(value) {
+    handleChange(event) {
+        const target = event.target;
+        const value = target.type === 'checkbox' ? target.checked : target.value;
+        const name = target.name;
+        this.setState({
+            [name]: value
+        })
+    }
+
+    handleEditorChange(value) {
         this.setState({
             value
         })
     }
+
     componentWillReceiveProps(nextProps, nextContext) {
-        this.setState({value:nextProps.value});
+        const {value, title} = nextProps;
+        this.setState({
+            value,
+            title
+        });
     }
 
     onSave(value) {
-        const title = this.getTitle();
+        const title = this.state.title ? this.state.title : this.getTitle();
 
         // let texts = value.replace(/[\n\r]/g, '<br>');
         this.props.onSave(value, title);
@@ -40,8 +56,15 @@ class CreateArticle extends Component {
     }
 
     render() {
+        const {title, value} = this.state;
         return (
-            <Editor value={this.state.value} onChange={this.handleChange.bind(this)} onSave={this.onSave.bind(this)}/>
+            <>
+                <input type="text" className="form-control title-input" placeholder="Title..." name="title"
+                       value={title}
+                       onChange={this.handleChange.bind(this)}/>
+                <Editor placeholder="Start writing here..." value={value}
+                        onChange={this.handleEditorChange.bind(this)} onSave={this.onSave.bind(this)}/>
+            </>
         )
     }
 }
