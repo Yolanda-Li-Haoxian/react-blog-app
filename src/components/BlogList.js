@@ -19,14 +19,14 @@ class BlogList extends Component {
             blogs: newBlogs
         });
     }
-    onEdit (blog){
-        this.props.onEdit(blog);
+    onEdit (blog,index){
+        this.props.onEdit(blog,index);
     }
 
 
     render() {
         let blogItem = this.state.blogs.map((item, index) => {
-            return <BlogItem key={'blog-' + index} onRemove={this.onRemove.bind(this,index)} onEdit={this.onEdit.bind(this,item)}>{item}</BlogItem>
+            return <BlogItem key={'blog-' + index} onRemove={this.onRemove.bind(this,index)} onEdit={this.onEdit.bind(this,item,index)}>{item}</BlogItem>
         });
         return (
             <>
