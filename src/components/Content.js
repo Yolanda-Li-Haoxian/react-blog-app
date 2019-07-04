@@ -2,7 +2,8 @@
  * Created by lihaoxian on 2019/6/25.
  */
 import React, {Component} from 'react';
-import {Container, Row, Col} from 'react-bootstrap';
+// import {Container, Row, Col} from 'react-bootstrap';
+import {Row, Col} from 'antd';
 import emitter from '../events';
 import CreateArticle from './CreateArticle';
 import Article from './Article';
@@ -15,28 +16,28 @@ let blogs = [
 let editMode = false;
 let blogIndex = 0;
 
-class Content extends Component {
+class BlogContent extends Component {
     constructor(props) {
         super(props);
         this.state = {
             value: '',
-            title:'',
+            title: '',
             preview: true,
             blogs: blogs
         }
     }
 
-    onEdit = (blog,index)=>{
+    onEdit = (blog, index) => {
         editMode = true;
         blogIndex = index;
         this.setState({
             value: blog.value,
-            title:blog.title,
+            title: blog.title,
             preview: false
         });
     };
     onSave = (value, title) => {
-        editMode ? Content.updateBlog(value, title) : Content.addToList(value, title);
+        editMode ? BlogContent.updateBlog(value, title) : BlogContent.addToList(value, title);
         this.setState({
             blogs,
             value,
@@ -44,6 +45,15 @@ class Content extends Component {
             preview: true
         });
     };
+
+    onCreate = ()=>{
+        editMode = false;
+        this.setState({
+            preview: false,
+            value: '',
+            title: ''
+        })
+    }
     static updateBlog = (value, title) => {
         blogs[blogIndex].value = value;
         blogs[blogIndex].title = title;
@@ -61,7 +71,7 @@ class Content extends Component {
             this.setState({
                 preview: false,
                 value: '',
-                title:''
+                title: ''
             })
         });
     }
@@ -72,22 +82,25 @@ class Content extends Component {
     }
 
     render() {
-        const {preview, value,title, blogs} = this.state;
+        const {preview, value, title, blogs} = this.state;
         return (
-            <Container>
-                <Row>
-                    <Col sm={8} className="left-pan">
+            <>
+                <Row gutter={16} style={{height:'100%'}}>
+                    <Col  span={18} push={6} style={{height:'100%'}}>
                         {!preview ? (<CreateArticle onSave={this.onSave} value={value} title={title}/>) : (
                             <Article value={value} title={title}/>)}
                     </Col>
-                    <Col sm={4} className="right-pan">
-                        <h1>All Blogs</h1>
+                    <Col  span={6} pull={18}>
+                        <div>
+                            <h1>All Blogs</h1>
+                            <button onClick={this.onCreate} className="btn btn-primary">Create</button>
+                        </div>
                         <BlogList blogs={blogs} onEdit={this.onEdit}/>
                     </Col>
                 </Row>
-            </Container>
+            </>
         )
     }
 }
 
-export default Content;
+export default BlogContent;

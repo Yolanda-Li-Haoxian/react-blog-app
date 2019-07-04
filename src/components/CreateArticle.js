@@ -62,7 +62,7 @@ class CreateArticle extends Component {
                 <input type="text" className="form-control title-input" placeholder="Title..." name="title"
                        value={title}
                        onChange={this.handleChange.bind(this)}/>
-                <Editor placeholder="Start writing here..." value={value}
+                <Editor placeholder="Start writing here..." value={value} style={{height:'95%'}}
                         onChange={this.handleEditorChange.bind(this)} onSave={this.onSave.bind(this)}/>
             </>
         )
