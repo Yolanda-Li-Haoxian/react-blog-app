@@ -1,21 +1,20 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
-import {Tree, Icon, Menu, Input, Modal} from 'antd';
+import {Tree, Icon, Menu, Input, Modal, Dropdown} from 'antd';
 import AddFileModal from './modal/AddFileModal'
 
 const {Search} = Input;
-const {TreeNode} = Tree;
+const {TreeNode, DirectoryTree} = Tree;
 const treeData = [
     {
         title: '0-0',
         key: '0-0',
-        parentKey: '',
+        type: 1,
         children: [
             {
                 title: '0-0-0',
                 key: '0-0-0',
-                parentKey: '0-0',
                 type: '1',
                 children: [
                     {title: '0-0-0-0', key: '0-0-0-0'},
@@ -26,7 +25,6 @@ const treeData = [
             {
                 title: '0-0-1',
                 key: '0-0-1',
-                parentKey: '0-0',
                 children: [
                     {title: '0-0-1-0', key: '0-0-1-0'},
                     {title: '0-0-1-1', key: '0-0-1-1'},
@@ -36,16 +34,14 @@ const treeData = [
             {
                 title: '0-0-2',
                 key: '0-0-2',
-                parentKey: '0-0',
             },
-            {key: '0-0-3', author: 'lhx', date: '2019.6.27', title: 'title1', value: 'value1'},
-            {key: '0-0-4', author: 'hx1', date: '2019.6.28', title: 'title2', value: 'value2'}
+            {key: '0-0-3', author: 'lhx', date: '2019.6.27', title: 'title1', value: 'value1', type: 2},
+            {key: '0-0-4', author: 'hx1', date: '2019.6.28', title: 'title2', value: 'value2', type: 2}
         ],
     },
     {
         title: '0-1',
         key: '0-1',
-        parentKey: '',
         children: [
             {title: '0-1-0-0', key: '0-1-0-0'},
             {title: '0-1-0-1', key: '0-1-0-1'},
@@ -55,7 +51,6 @@ const treeData = [
     {
         title: '0-2',
         key: '0-2',
-        parentKey: ''
     },
 ];
 const dataList = [];
@@ -77,13 +72,13 @@ const insertNode = (type, key, tree, node) => {
     let newNode = {};
     switch (type) {
         case 1:
-            newNode = {title: node.title, key: 'folder1'};
+            newNode = {title: node.title, key: 'folder1', type: type};
             break;
         case 2:
-            newNode = {title: node.title, key: 'file1'};
+            newNode = {title: node.title, key: 'file1', type: type};
             break;
         default:
-            newNode = {title: 'folder1', key: 'folder1'};
+            newNode = {title: 'folder1', key: 'folder1', type: 1};
             break;
     }
 
@@ -136,7 +131,8 @@ class TreeFrame extends Component {
             searchValue: '',
             visible: false,
             expandedKeys: [],
-            autoExpandParent: true
+            autoExpandParent: true,
+            modalType: 1   //1:folder,2:file
         }
     }
 
@@ -156,11 +152,14 @@ class TreeFrame extends Component {
         console.log('selected', selectedKeys, info);
     };
     onRightClick = ({event, node}) => {
+        const {pageX, pageY} = event;
         this.setState({
-                selectedKey: node.props.eventKey
+                selectedKey: node.props.eventKey,
+                modalType: node.props.isLeaf ? 2 : 1
+            }, () => {
+                this.renderMenu({pageX, pageY});
             }
         );
-        this.renderMenu(event, node);
     };
     onNewFolder = () => {
         this.setState({visible: true, modalType: 1});
@@ -260,18 +259,19 @@ class TreeFrame extends Component {
     }
 
     //render UI
-    renderMenu(event, info) {
+    renderMenu({pageX, pageY}) {
+        const {modalType} = this.state;
         if (this.toolTip) {
             ReactDOM.unmountComponentAtNode(this.cmContainer);
             this.toolTip = null;
         }
         this.toolTip = (
-            <Menu theme="dark" defaultSelectedKeys={['1']} mode="vertical" theme="light">
-                <Menu.Item key="1" onClick={this.onNewFolder}>
+            <Menu style={{position: "relative", zIndex: '1', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'}}>
+                <Menu.Item key="1" onClick={this.onNewFolder} disabled={modalType === 2}>
                     <Icon type="folder"/>
                     <span>New Folder</span>
                 </Menu.Item>
-                <Menu.Item key="2" onClick={this.onNewFile}>
+                <Menu.Item key="2" onClick={this.onNewFile} disabled={modalType === 2}>
                     <Icon type="file"/>
                     <span>New File</span>
                 </Menu.Item>
@@ -285,8 +285,8 @@ class TreeFrame extends Component {
         const container = this._getContainer();
         Object.assign(this.cmContainer.style, {
             position: 'absolute',
-            left: `${event.pageX}px`,
-            top: `${event.pageY}px`,
+            left: `${pageX}px`,
+            top: `${pageY}px`,
         });
 
         ReactDOM.render(this.toolTip, container);
@@ -303,7 +303,7 @@ class TreeFrame extends Component {
                     index > -1 ? (
                         <span>
                             {beforeStr}
-                            <span style={{color: '#f50'}}>{searchValue}</span>
+                            <span style={{color: '#f50', background: '#fcc666'}}>{searchValue}</span>
                             {afterStr}
                         </span>
                     ) : (
@@ -312,25 +312,25 @@ class TreeFrame extends Component {
 
                 if (item.children) {
                     return (
-                        <TreeNode title={title} key={item.key} dataRef={item}>
+                        <TreeNode title={title} key={item.key} dataRef={item} isLeaf={item.type === 2}>
                             {renderTreeNodes(item.children)}
                         </TreeNode>
                     );
                 }
                 // return <TreeNode {...item} />;
-                return <TreeNode key={item.key} title={title}/>;
+                return <TreeNode key={item.key} title={title} dataRef={item} isLeaf={item.type === 2}/>
             });
         return (
             <>
                 <Search style={{marginBottom: 8}} placeholder="Search" onChange={this.onSearch}/>
-                <Tree onSelect={this.onSelect}
-                      onRightClick={this.onRightClick}
-                      blockNode
-                      expandedKeys={expandedKeys}
-                      autoExpandParent={autoExpandParent}
-                      onExpand={this.onExpand}>
+                <DirectoryTree onSelect={this.onSelect}
+                               onRightClick={this.onRightClick}
+                               blockNode
+                               expandedKeys={expandedKeys}
+                               autoExpandParent={autoExpandParent}
+                               onExpand={this.onExpand}>
                     {renderTreeNodes(this.state.treeData)}
-                </Tree>
+                </DirectoryTree>
                 <AddFileModal visible={visible}
                               modalType={modalType}
                               handleOk={this.handleOk}

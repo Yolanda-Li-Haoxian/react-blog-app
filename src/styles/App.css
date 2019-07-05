@@ -53,6 +53,9 @@
 .App-link {
     color: #61dafb;
 }
+.ant-menu-item:hover {
+    background-color: #e6f7ff;
+}
 
 @keyframes App-logo-spin {
     from {
