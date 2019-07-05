@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
-import {Tree, Icon, Menu, Input} from 'antd';
+import {Tree, Icon, Menu, Input, Modal} from 'antd';
+import AddFileModal from './modal/AddFileModal'
 
 const {Search} = Input;
 const {TreeNode} = Tree;
@@ -57,7 +58,7 @@ const treeData = [
         parentKey: ''
     },
 ];
-
+const dataList = [];
 const getParentKey = (key, tree) => {
     let parentKey;
     for (let i = 0; i < tree.length; i++) {
@@ -72,17 +73,17 @@ const getParentKey = (key, tree) => {
     }
     return parentKey;
 };
-const insertNode = (type, key, tree) => {
-    let node = {};
+const insertNode = (type, key, tree, node) => {
+    let newNode = {};
     switch (type) {
         case 1:
-            node = {title: 'folder1', key: 'folder1'};
+            newNode = {title: node.title, key: 'folder1'};
             break;
         case 2:
-            node = {title: 'file1', key: 'file1'};
+            newNode = {title: node.title, key: 'file1'};
             break;
         default:
-            node = {title: 'folder1', key: 'folder1'};
+            newNode = {title: 'folder1', key: 'folder1'};
             break;
     }
 
@@ -91,10 +92,11 @@ const insertNode = (type, key, tree) => {
             if (!tree[i].children) {
                 tree[i].children = [];
             }
-            tree[i].children.push(node);
+            tree[i].children.push(newNode);
+            dataList.push(newNode);
             return true;
         }
-        if (tree[i].children && insertNode(type, key, tree[i].children)) {
+        if (tree[i].children && insertNode(type, key, tree[i].children, node)) {
             return true;
         }
     }
@@ -112,18 +114,18 @@ const deleteNode = (type, key, tree) => {
     }
     return false;
 }
-const dataList = [];
 const generateList = data => {
     for (let i = 0; i < data.length; i++) {
         const node = data[i];
-        const {key} = node;
-        dataList.push({key, title: key});
+        const {key, title} = node;
+        dataList.push({key, title});
         if (node.children) {
             generateList(node.children);
         }
     }
 };
 
+generateList(treeData);
 
 class TreeFrame extends Component {
     constructor(props) {
@@ -131,12 +133,15 @@ class TreeFrame extends Component {
         this.state = {
             selectedKey: [],
             treeData: treeData,
-            searchValue: ''
+            searchValue: '',
+            visible: false,
+            expandedKeys: [],
+            autoExpandParent: true
         }
     }
 
+    //Life cycle of component
     componentDidMount() {
-        generateList(this.state.treeData);
         document.addEventListener('click', this._handleClickOutside);
         document.addEventListener('scroll', this._handleScroll);
     };
@@ -146,6 +151,7 @@ class TreeFrame extends Component {
         document.removeEventListener('scroll', this._handleScroll);
     }
 
+    //tree event
     onSelect = (selectedKeys, info) => {
         console.log('selected', selectedKeys, info);
     };
@@ -157,25 +163,31 @@ class TreeFrame extends Component {
         this.renderMenu(event, node);
     };
     onNewFolder = () => {
-        const {selectedKey, treeData} = this.state;
-        if (insertNode(1, selectedKey, treeData)) {
-            this.setState({treeData});
-        }
+        this.setState({visible: true, modalType: 1});
     };
     onNewFile = () => {
-        const {selectedKey, treeData} = this.state;
-        if (insertNode(2, selectedKey, treeData)) {
-            this.setState({treeData});
-        }
+        this.setState({visible: true, modalType: 2})
     };
     onDelete = () => {
         const {selectedKey, treeData} = this.state;
-        if (deleteNode(2, selectedKey, treeData)) {
-            this.setState({treeData});
-        }
+        const {confirm} = Modal;
+        const that = this;
+        confirm({
+            title: 'Do you Want to delete these items?',
+            content: 'When clicked the OK button,将无法恢复',
+            onOk() {
+                if (deleteNode(2, selectedKey, treeData)) {
+                    that.setState({treeData});
+                }
+            },
+            onCancel() {
+
+            },
+        });
     };
     onSearch = e => {
         const {value} = e.target;
+        const {treeData} = this.state;
         const expandedKeys = dataList.map(item => {
             if (item.title.indexOf(value) > -1) {
                 return getParentKey(item.key, treeData);
@@ -189,8 +201,43 @@ class TreeFrame extends Component {
             autoExpandParent: true,
         });
     };
+    onExpand = expandedKeys => {
+        this.setState({
+            expandedKeys,
+            autoExpandParent: false,
+        });
+    };
+
+    //modal event
+    handleOk = e => {
+        const {selectedKey, treeData} = this.state;
+        const {form, modalType} = this.formRef.props;
+        form.validateFields((err, values) => {
+            if (err) {
+                return;
+            }
+            console.log('Received values of form: ', values);
+            form.resetFields();
+            if (insertNode(modalType, selectedKey, treeData, values)) {
+                this.setState({treeData});
+            }
+            this.setState({
+                visible: false,
+            });
+        });
+    };
+
+    handleCancel = e => {
+        this.setState({
+            visible: false,
+        });
+    };
+    _saveFormRef = formRef => {
+        this.formRef = formRef;
+    };
 
 
+    //static function
     _handleClickOutside = () => {
         if (this.toolTip) {
             ReactDOM.unmountComponentAtNode(this.cmContainer);
@@ -204,7 +251,6 @@ class TreeFrame extends Component {
         }
     };
 
-
     _getContainer() {
         if (!this.cmContainer) {
             this.cmContainer = document.createElement('div');
@@ -213,6 +259,7 @@ class TreeFrame extends Component {
         return this.cmContainer;
     }
 
+    //render UI
     renderMenu(event, info) {
         if (this.toolTip) {
             ReactDOM.unmountComponentAtNode(this.cmContainer);
@@ -245,45 +292,53 @@ class TreeFrame extends Component {
         ReactDOM.render(this.toolTip, container);
     }
 
-    renderTreeNodes = data =>
-        data.map(item => {
-            const {searchValue} = this.state;
-            const index = item.title.indexOf(searchValue);
-            const beforeStr = item.title.substr(0, index);
-            const afterStr = item.title.substr(index + searchValue.length);
-            const title =
-                index > -1 ? (
-                    <span>
-                        {beforeStr}
-                        <span style={{color: '#f50'}}>{searchValue}</span>
-                        {afterStr}
-                    </span>
-                ) : (
-                    <span>{item.title}</span>
-                );
-
-            if (item.children) {
-                return (
-                    <TreeNode title={title} key={item.key} dataRef={item}>
-                        {this.renderTreeNodes(item.children)}
-                    </TreeNode>
-                );
-            }
-            return <TreeNode {...item} />;
-        });
-
-
     render() {
+        const {visible, modalType, searchValue, expandedKeys, autoExpandParent} = this.state;
+        const renderTreeNodes = data =>
+            data.map(item => {
+                const index = item.title.indexOf(searchValue);
+                const beforeStr = item.title.substr(0, index);
+                const afterStr = item.title.substr(index + searchValue.length);
+                const title =
+                    index > -1 ? (
+                        <span>
+                            {beforeStr}
+                            <span style={{color: '#f50'}}>{searchValue}</span>
+                            {afterStr}
+                        </span>
+                    ) : (
+                        <span>{item.title}</span>
+                    );
+
+                if (item.children) {
+                    return (
+                        <TreeNode title={title} key={item.key} dataRef={item}>
+                            {renderTreeNodes(item.children)}
+                        </TreeNode>
+                    );
+                }
+                // return <TreeNode {...item} />;
+                return <TreeNode key={item.key} title={title}/>;
+            });
         return (
             <>
                 <Search style={{marginBottom: 8}} placeholder="Search" onChange={this.onSearch}/>
-                <Tree defaultExpandedKeys={['0-0-0']} onSelect={this.onSelect} onRightClick={this.onRightClick}
-                      blockNode>
-                    {this.renderTreeNodes(this.state.treeData)}
+                <Tree onSelect={this.onSelect}
+                      onRightClick={this.onRightClick}
+                      blockNode
+                      expandedKeys={expandedKeys}
+                      autoExpandParent={autoExpandParent}
+                      onExpand={this.onExpand}>
+                    {renderTreeNodes(this.state.treeData)}
                 </Tree>
+                <AddFileModal visible={visible}
+                              modalType={modalType}
+                              handleOk={this.handleOk}
+                              handleCancel={this.handleCancel}
+                              wrappedComponentRef={this._saveFormRef}/>
             </>
         );
     }
+}
 
-};
 export default TreeFrame;
