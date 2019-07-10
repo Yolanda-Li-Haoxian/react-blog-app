@@ -4,11 +4,12 @@ import 'antd/dist/antd.css';
 import {Tree, Icon, Menu, Input, Modal, message, Tooltip} from 'antd';
 import AddFileModal from './modal/AddFileModal'
 import emitter from "../events";
-import {getTreeData, deleteTreeNodeById, insertTreeNode} from '../services/httpRequest'
+import {getTreeData, deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest'
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
 const dataList = [];
+let editNode = {};
 const getGUID = () => {
     return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
         var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
@@ -89,10 +90,10 @@ class TreeFrame extends Component {
             selectedKey: [],
             treeData: [],
             searchValue: '',
-            visible: false,
+            showEditModal: false,
             expandedKeys: [],
             autoExpandParent: true,
-            modalType: 1   //1:folder,2:file
+            modalType: 1   //1:new folder,2:new file,3 rename folder
         }
     }
 
@@ -103,8 +104,8 @@ class TreeFrame extends Component {
             this.setState({treeData});
             generateList(treeData);
         });
-        // document.addEventListener('click', this._handleClickOutside);
-        // document.addEventListener('scroll', this._handleScroll);
+        document.addEventListener('click', this._handleClickOutside);
+        document.addEventListener('scroll', this._handleScroll);
         this.eventUpdateEmitter = emitter.on("updateTreeNode", (blog) => {
             const id = blog.id;
             if (blog.id) {
@@ -119,7 +120,7 @@ class TreeFrame extends Component {
     componentWillUnmount() {
         document.removeEventListener('click', this._handleClickOutside);
         document.removeEventListener('scroll', this._handleScroll);
-        // emitter.removeListener(this.eventUpdateEmitter);
+        emitter.removeListener(this.eventUpdateEmitter);
         // console.log('tree componentWillUnmount')
 
     }
@@ -132,6 +133,7 @@ class TreeFrame extends Component {
     };
     onRightClick = ({event, node}) => {
         const {pageX, pageY} = event;
+        editNode = node.props.dataRef;
         this.setState({
                 selectedKey: node.props.eventKey,
                 modalType: node.props.isLeaf ? 2 : 1
@@ -140,11 +142,14 @@ class TreeFrame extends Component {
             }
         );
     };
+    onRename = () => {
+        this.setState({showEditModal: true, modalType: 3});
+    }
     onNewFolder = () => {
-        this.setState({visible: true, modalType: 1});
+        this.setState({showEditModal: true, modalType: 1});
     };
     onNewFile = () => {
-        this.setState({visible: true, modalType: 2})
+        this.setState({showEditModal: true, modalType: 2})
     };
     onDelete = () => {
         const {selectedKey, treeData} = this.state;
@@ -156,7 +161,7 @@ class TreeFrame extends Component {
             confirmLoading: true,
             onOk() {
                 deleteTreeNodeById(selectedKey).then(response => {
-                    message.success(response.message);
+                    message.success(response.msg);
                     if (deleteNode(2, selectedKey, treeData)) {
                         that.setState({treeData});
                     }
@@ -191,43 +196,33 @@ class TreeFrame extends Component {
     };
 
     //modal event
-    handleOk = e => {
+    handleModalOk = e => {
         const {form} = this.formRef.props;
         form.validateFields((err, values) => {
             if (err) {
                 return;
             }
             form.resetFields();
-            this.saveArticle(values);
-        });
-    };
-
-    saveArticle = (node) => {
-        const {selectedKey, treeData} = this.state;
-        const {modalType} = this.formRef.props;
-        let createTime = new Date().toLocaleString();
-        let author = 'lhx';
-        let guid = getGUID();
-        let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
-        insertTreeNode(newNode).then(response => {
-            if (insertNode(modalType, selectedKey, treeData, newNode)) {
-                modalType===2&&emitter.emit("updateContent", 'onCreateNode', newNode);
-                this.setState({treeData, visible: false});
+            if (this.state.modalType !== 3) {
+                this._createTreeNode(values);
+            } else {
+                this._updateFolderNode(values);
             }
-        })
-    }
 
-    handleCancel = e => {
-        this.setState({
-            visible: false,
         });
     };
+
+    handleModalCancel = e => {
+        this.setState({
+            showEditModal: false,
+        });
+    };
+
+    //static function
     _saveFormRef = formRef => {
         this.formRef = formRef;
     };
 
-
-    //static function
     _handleClickOutside = () => {
         if (this.toolTip) {
             ReactDOM.unmountComponentAtNode(this.cmContainer);
@@ -248,6 +243,29 @@ class TreeFrame extends Component {
         }
         return this.cmContainer;
     }
+    _createTreeNode = (node) => {
+        const {selectedKey, treeData, modalType} = this.state;
+        let createTime = new Date().toLocaleString();
+        let author = 'lhx';
+        let guid = getGUID();
+        let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
+        insertTreeNode(newNode).then(response => {
+            if (insertNode(modalType, selectedKey, treeData, newNode)) {
+                modalType === 2 && emitter.emit("updateContent", 'onCreateNode', newNode);
+                this.setState({treeData, showEditModal: false});
+            }
+        })
+    };
+    _updateFolderNode = (node) => {
+        node.id = this.state.selectedKey;
+        updateFolder(node).then(response => {
+            message.success(response.msg);
+            const {treeData, showEditModal} = this.state;
+            if (updateNode(node.id, node, this.state.treeData)) {
+                this.setState({treeData, showEditModal: false});
+            }
+        });
+    };
 
     //render UI
     renderMenu({pageX, pageY}) {
@@ -258,7 +276,11 @@ class TreeFrame extends Component {
         }
         this.toolTip = (
             <Menu style={{position: "relative", zIndex: '1', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'}}>
-                <Menu.Item id="1" onClick={this.onNewFolder} disabled={modalType === 2}>
+                <Menu.Item id="1" onClick={this.onRename} disabled={modalType === 2}>
+                    <Icon type="form"/>
+                    <span>Rename</span>
+                </Menu.Item>
+                <Menu.Item id="2" onClick={this.onNewFolder} disabled={modalType === 2}>
                     <Icon type="folder"/>
                     <span>New Folder</span>
                 </Menu.Item>
@@ -266,7 +288,7 @@ class TreeFrame extends Component {
                     <Icon type="file"/>
                     <span>New File</span>
                 </Menu.Item>
-                <Menu.Item id="3" onClick={this.onDelete}>
+                <Menu.Item id="4" onClick={this.onDelete}>
                     <Icon type="delete"/>
                     <span>Delete</span>
                 </Menu.Item>
@@ -284,7 +306,7 @@ class TreeFrame extends Component {
     }
 
     render() {
-        const {visible, modalType, searchValue, expandedKeys, autoExpandParent} = this.state;
+        const {showEditModal, modalType, searchValue, expandedKeys, autoExpandParent} = this.state;
         const renderTreeNodes = data =>
             data.map(item => {
                 const index = item.title.indexOf(searchValue);
@@ -322,10 +344,11 @@ class TreeFrame extends Component {
                                onExpand={this.onExpand}>
                     {renderTreeNodes(this.state.treeData)}
                 </DirectoryTree>
-                <AddFileModal visible={visible}
+                <AddFileModal visible={showEditModal}
+                              editNode={editNode}
                               modalType={modalType}
-                              handleOk={this.handleOk}
-                              handleCancel={this.handleCancel}
+                              handleOk={this.handleModalOk}
+                              handleCancel={this.handleModalCancel}
                               wrappedComponentRef={this._saveFormRef}/>
             </>
         );

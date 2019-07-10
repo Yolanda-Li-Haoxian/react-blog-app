@@ -68,12 +68,15 @@ class BlogContent extends Component {
     };
     onSave = () => {
         const title = this.state.title;
+        if (!title) {
+            message.error('Please Input the title.');
+            return;
+        }
         const value = this.editor.txt.html();
-        const node = {title, value};
+        const node = {id: treeNodeKey, title, value};
         updateArticle(node).then(response => {
             message.success(response.msg);
-            BlogContent.updateBlog(value, title);
-            // editMode ? BlogContent.updateBlog(value, title) : BlogContent.addToList(value, title);
+            emitter.emit('updateTreeNode', node);
             this.setState({
                 preview: true,
                 value
@@ -92,11 +95,6 @@ class BlogContent extends Component {
     }
 
     //static function
-    static updateBlog = (value, title) => {
-        const blog = {id: treeNodeKey, title: title, value: value};
-        emitter.emit('updateTreeNode', blog);
-    };
-
     static addToList(value, title) {
         const blog = {id: treeNodeKey, title: title, value: value, author: 'lhxxx', date: new Date().toLocaleString()}
         emitter.emit('updateTreeNode', blog);
@@ -113,31 +111,28 @@ class BlogContent extends Component {
     //render UI
     render() {
         const {preview, value, title} = this.state;
-        if (title) {
-            if (preview) {
-                //preview mode
-                return (
-                    <div style={{borderLeft: '1px solid #ccc', padding: '0 10px', height: '100%', overflowY: 'auto'}}
-                         id="scroll">
-                        <BackTop target={() => document.getElementById('scroll')}/>
-                        <h1 style={{width: '90%', display: 'inline-block'}}>{title}</h1>
-                        <Button type="link" icon="edit" onClick={this.onEdit}>Edit</Button>
-                        <div dangerouslySetInnerHTML={{__html: value}}/>
-                    </div>
-                )
-            } else {
-                //edit mode
-                return (
-                    <>
-                        <Input size="large" placeholder="Title..." onChange={this.onChangeTitle}
-                               style={{marginBottom: '12px', marginRight: '12px', width: '90%',color:'#40a9ff'}} defaultValue={title}/>
-                        <Button type="primary" onClick={this.onSave}>Save</Button>
-                        <div ref={this.editorRef} className='wangeditor'/>
-                    </>
-                )
-            }
+        if (preview) {
+            //preview mode
+            return (
+                <div style={{borderLeft: '1px solid #ccc', padding: '0 10px', height: '100%', overflowY: 'auto'}}
+                     id="scroll">
+                    <BackTop target={() => document.getElementById('scroll')}/>
+                    <h1 style={{width: '90%', display: 'inline-block'}}>{title}</h1>
+                    <Button type="link" icon="edit" onClick={this.onEdit}>Edit</Button>
+                    <div dangerouslySetInnerHTML={{__html: value}}/>
+                </div>
+            )
         } else {
-            return <div/>
+            //edit mode
+            return (
+                <>
+                    <Input size="large" placeholder="Title..." onChange={this.onChangeTitle}
+                           style={{marginBottom: '12px', marginRight: '12px', width: '90%', color: '#40a9ff'}}
+                           defaultValue={title}/>
+                    <Button type="primary" onClick={this.onSave}>Save</Button>
+                    <div ref={this.editorRef} className='wangeditor'/>
+                </>
+            )
         }
     }
 }

@@ -31,15 +31,14 @@ export const getTreeData=()=>{
 }
 
 export const insertTreeNode=(node)=>{
-    console.log('create:',node);
     return service.post('/api/blog/insertTreeNode',node);
 }
-
-export const updateArticle=(node)=>{
-    console.log('update:',node);
-    return service.post('/api/blog/updateArticle',node);
-}
-
 export const deleteTreeNodeById = (id)=>{
     return service.delete('/api/blog/deleteTreeNode',{id});
+}
+export const updateArticle=(node)=>{
+    return service.post('/api/blog/updateArticle',node);
+}
+export const updateFolder=(node)=>{
+    return service.post('/api/blog/updateFolder',node);
 }
