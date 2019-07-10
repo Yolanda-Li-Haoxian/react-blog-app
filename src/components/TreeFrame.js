@@ -1,109 +1,71 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
 import 'antd/dist/antd.css';
-import {Tree, Icon, Menu, Input, Modal, Dropdown} from 'antd';
+import {Tree, Icon, Menu, Input, Modal, message, Tooltip} from 'antd';
 import AddFileModal from './modal/AddFileModal'
+import emitter from "../events";
+import {getTreeData, deleteTreeNodeById, insertTreeNode} from '../services/httpRequest'
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
-const treeData = [
-    {
-        title: '0-0',
-        key: '0-0',
-        type: 1,
-        children: [
-            {
-                title: '0-0-0',
-                key: '0-0-0',
-                type: '1',
-                children: [
-                    {title: '0-0-0-0', key: '0-0-0-0'},
-                    {title: '0-0-0-1', key: '0-0-0-1'},
-                    {title: '0-0-0-2', key: '0-0-0-2'},
-                ],
-            },
-            {
-                title: '0-0-1',
-                key: '0-0-1',
-                children: [
-                    {title: '0-0-1-0', key: '0-0-1-0'},
-                    {title: '0-0-1-1', key: '0-0-1-1'},
-                    {title: '0-0-1-2', key: '0-0-1-2'},
-                ],
-            },
-            {
-                title: '0-0-2',
-                key: '0-0-2',
-            },
-            {key: '0-0-3', author: 'lhx', date: '2019.6.27', title: 'title1', value: 'value1', type: 2},
-            {key: '0-0-4', author: 'hx1', date: '2019.6.28', title: 'title2', value: 'value2', type: 2}
-        ],
-    },
-    {
-        title: '0-1',
-        key: '0-1',
-        children: [
-            {title: '0-1-0-0', key: '0-1-0-0'},
-            {title: '0-1-0-1', key: '0-1-0-1'},
-            {title: '0-1-0-2', key: '0-1-0-2'},
-        ],
-    },
-    {
-        title: '0-2',
-        key: '0-2',
-    },
-];
 const dataList = [];
-const getParentKey = (key, tree) => {
+const getGUID = () => {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+const getParentId = (id, tree) => {
     let parentKey;
     for (let i = 0; i < tree.length; i++) {
         const node = tree[i];
         if (node.children) {
-            if (node.children.some(item => item.key === key)) {
-                parentKey = node.key;
-            } else if (getParentKey(key, node.children)) {
-                parentKey = getParentKey(key, node.children);
+            if (node.children.some(item => item.id === id)) {
+                parentKey = node.id;
+            } else if (getParentId(id, node.children)) {
+                parentKey = getParentId(id, node.children);
             }
         }
     }
     return parentKey;
 };
-const insertNode = (type, key, tree, node) => {
-    let newNode = {};
-    switch (type) {
-        case 1:
-            newNode = {title: node.title, key: 'folder1', type: type};
-            break;
-        case 2:
-            newNode = {title: node.title, key: 'file1', type: type};
-            break;
-        default:
-            newNode = {title: 'folder1', key: 'folder1', type: 1};
-            break;
-    }
-
+const insertNode = (type, id, tree, node) => {
     for (let i = 0; i < tree.length; i++) {
-        if (tree[i].key === key) {
+        if (tree[i].id === id) {
             if (!tree[i].children) {
                 tree[i].children = [];
             }
-            tree[i].children.push(newNode);
-            dataList.push(newNode);
+            tree[i].children.push(node);
+            dataList.push(node);
             return true;
         }
-        if (tree[i].children && insertNode(type, key, tree[i].children, node)) {
+        if (tree[i].children && insertNode(type, id, tree[i].children, node)) {
             return true;
         }
     }
     return false;
 };
-const deleteNode = (type, key, tree) => {
+const updateNode = (id, node, tree) => {
     for (let i = 0; i < tree.length; i++) {
-        if (tree[i].key === key) {
+        if (tree[i].id === id) {
+            tree[i].title = node.title;
+            tree[i].value = node.value;
+            return true;
+        }
+        if (tree[i].children && updateNode(id, node, tree[i].children)) {
+            return true;
+        }
+    }
+    return false;
+};
+const deleteNode = (type, id, tree) => {
+    for (let i = 0; i < tree.length; i++) {
+        if (tree[i].id === id) {
             tree.splice(i, 1);
             return true;
         }
-        if (tree[i].children && deleteNode(type, key, tree[i].children)) {
+        if (tree[i].children && deleteNode(type, id, tree[i].children)) {
             return true;
         }
     }
@@ -112,22 +74,20 @@ const deleteNode = (type, key, tree) => {
 const generateList = data => {
     for (let i = 0; i < data.length; i++) {
         const node = data[i];
-        const {key, title} = node;
-        dataList.push({key, title});
+        const {id, title} = node;
+        dataList.push({id, title});
         if (node.children) {
             generateList(node.children);
         }
     }
 };
 
-generateList(treeData);
-
 class TreeFrame extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedKey: [],
-            treeData: treeData,
+            treeData: [],
             searchValue: '',
             visible: false,
             expandedKeys: [],
@@ -138,18 +98,37 @@ class TreeFrame extends Component {
 
     //Life cycle of component
     componentDidMount() {
-        document.addEventListener('click', this._handleClickOutside);
-        document.addEventListener('scroll', this._handleScroll);
+        getTreeData().then(response => {
+            const treeData = response.treeData;
+            this.setState({treeData});
+            generateList(treeData);
+        });
+        // document.addEventListener('click', this._handleClickOutside);
+        // document.addEventListener('scroll', this._handleScroll);
+        this.eventUpdateEmitter = emitter.on("updateTreeNode", (blog) => {
+            const id = blog.id;
+            if (blog.id) {
+                const treeData = this.state.treeData;
+                if (updateNode(id, blog, treeData)) {
+                    this.setState({treeData});
+                }
+            }
+        });
     };
 
     componentWillUnmount() {
         document.removeEventListener('click', this._handleClickOutside);
         document.removeEventListener('scroll', this._handleScroll);
+        // emitter.removeListener(this.eventUpdateEmitter);
+        // console.log('tree componentWillUnmount')
+
     }
+
 
     //tree event
     onSelect = (selectedKeys, info) => {
-        console.log('selected', selectedKeys, info);
+        const blog = info.node.props.dataRef;
+        blog.type === 2 && emitter.emit("updateContent", 'selectedTreeNode', blog);
     };
     onRightClick = ({event, node}) => {
         const {pageX, pageY} = event;
@@ -174,10 +153,14 @@ class TreeFrame extends Component {
         confirm({
             title: 'Do you Want to delete these items?',
             content: 'When clicked the OK button,将无法恢复',
+            confirmLoading: true,
             onOk() {
-                if (deleteNode(2, selectedKey, treeData)) {
-                    that.setState({treeData});
-                }
+                deleteTreeNodeById(selectedKey).then(response => {
+                    message.success(response.message);
+                    if (deleteNode(2, selectedKey, treeData)) {
+                        that.setState({treeData});
+                    }
+                });
             },
             onCancel() {
 
@@ -189,7 +172,7 @@ class TreeFrame extends Component {
         const {treeData} = this.state;
         const expandedKeys = dataList.map(item => {
             if (item.title.indexOf(value) > -1) {
-                return getParentKey(item.key, treeData);
+                return getParentId(item.id, treeData);
             }
             return null;
         })
@@ -209,22 +192,30 @@ class TreeFrame extends Component {
 
     //modal event
     handleOk = e => {
-        const {selectedKey, treeData} = this.state;
-        const {form, modalType} = this.formRef.props;
+        const {form} = this.formRef.props;
         form.validateFields((err, values) => {
             if (err) {
                 return;
             }
-            console.log('Received values of form: ', values);
             form.resetFields();
-            if (insertNode(modalType, selectedKey, treeData, values)) {
-                this.setState({treeData});
-            }
-            this.setState({
-                visible: false,
-            });
+            this.saveArticle(values);
         });
     };
+
+    saveArticle = (node) => {
+        const {selectedKey, treeData} = this.state;
+        const {modalType} = this.formRef.props;
+        let createTime = new Date().toLocaleString();
+        let author = 'lhx';
+        let guid = getGUID();
+        let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
+        insertTreeNode(newNode).then(response => {
+            if (insertNode(modalType, selectedKey, treeData, newNode)) {
+                modalType===2&&emitter.emit("updateContent", 'onCreateNode', newNode);
+                this.setState({treeData, visible: false});
+            }
+        })
+    }
 
     handleCancel = e => {
         this.setState({
@@ -267,15 +258,15 @@ class TreeFrame extends Component {
         }
         this.toolTip = (
             <Menu style={{position: "relative", zIndex: '1', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.15)'}}>
-                <Menu.Item key="1" onClick={this.onNewFolder} disabled={modalType === 2}>
+                <Menu.Item id="1" onClick={this.onNewFolder} disabled={modalType === 2}>
                     <Icon type="folder"/>
                     <span>New Folder</span>
                 </Menu.Item>
-                <Menu.Item key="2" onClick={this.onNewFile} disabled={modalType === 2}>
+                <Menu.Item id="2" onClick={this.onNewFile} disabled={modalType === 2}>
                     <Icon type="file"/>
                     <span>New File</span>
                 </Menu.Item>
-                <Menu.Item key="3" onClick={this.onDelete}>
+                <Menu.Item id="3" onClick={this.onDelete}>
                     <Icon type="delete"/>
                     <span>Delete</span>
                 </Menu.Item>
@@ -312,13 +303,13 @@ class TreeFrame extends Component {
 
                 if (item.children) {
                     return (
-                        <TreeNode title={title} key={item.key} dataRef={item} isLeaf={item.type === 2}>
+                        <TreeNode title={title} key={item.id} dataRef={item} isLeaf={item.type === 2}>
                             {renderTreeNodes(item.children)}
                         </TreeNode>
                     );
                 }
                 // return <TreeNode {...item} />;
-                return <TreeNode key={item.key} title={title} dataRef={item} isLeaf={item.type === 2}/>
+                return <TreeNode key={item.id} title={title} dataRef={item} isLeaf={item.type === 2}></TreeNode>
             });
         return (
             <>

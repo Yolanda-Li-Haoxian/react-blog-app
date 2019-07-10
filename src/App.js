@@ -6,12 +6,11 @@ import TreeFrame from './components/TreeFrame'
 // import Content from './components/Content';
 import {Layout, Menu, Breadcrumb, Icon} from 'antd';
 import BlogContent from "./components/Content";
-const {SubMenu} = Menu;
 const {Header, Content, Footer, Sider} = Layout;
 
 function App() {
     return (
-        <Layout style={{height:'100%'}}>
+        <Layout style={{height: '100%'}}>
             <Header className="header">
                 <div className="logo"/>
                 <Menu
@@ -25,12 +24,12 @@ function App() {
                     <Menu.Item key="3">nav 3</Menu.Item>
                 </Menu>
             </Header>
-            <Content style={{padding: '0 50px',height:'100%'}}>
-                <Layout style={{padding: '24px 0', background: '#fff',height:'100%'}}>
-                    <Sider width={200} style={{background: '#fff'}}>
+            <Content style={{padding: '0 50px', height: '100%'}}>
+                <Layout style={{padding: '24px 0', background: '#fff', height: '100%'}}>
+                    <Sider width={300} style={{background: '#fff'}}>
                         <TreeFrame/>
                     </Sider>
-                    <Content style={{padding: '0 24px', minHeight: 280}}>
+                    <Content style={{padding: '0 24px', minHeight: 280, height: '100%'}} id="scroll1">
                         <BlogContent/>
                     </Content>
                 </Layout>
