@@ -1,0 +1,42 @@
+
+//1  获取目录树 ：   /api/blog/getTree
+{
+  "status": 200,
+  "errMsg": "",
+  "data": {
+    "treeData": [
+      {
+        "id": "@guid()",   //唯一标识
+        "type": 1,     //1：folder,2: 文章
+        "title": "@ctitle(10,20)",  //文章标题
+        "createAt": "@integer(1111111111111,1999999999999)",   //创建时间
+        "author": "@cname",   //文章作者
+        "value": "",   //文章内容
+        "children": [          //子节点 ,同上
+          {
+            "id": "@guid()",
+            "type": "@integer(1,2)",
+            "author": "@cname",
+            "createAt": "@integer(1111111111111,1999999999999)",
+            "title": "@ctitle",
+            "value": "@cparagraph()"
+          }
+        ]
+      }
+    ]
+  }
+}
+//2  新增节点： /api/blog/insertTreeNode/:node
+//3  修改文章节点： /api/blog/updateArticle/:node
+//4  修改folder节点： /api/blog/updateFolder/:node
+//5  删除节点： /api/blog/deleteTreeNode/:id
+
+//其中node数据结构
+//{
+//  "id": "@guid()",
+//  "type": "@integer(1,2)",
+//  "author": "@cname",
+//  "createAt": "@integer(1111111111111,1999999999999)",
+//  "title": "@ctitle",
+//  "value": "@cparagraph()"
+//}
