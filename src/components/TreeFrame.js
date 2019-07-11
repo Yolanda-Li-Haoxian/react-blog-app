@@ -96,7 +96,6 @@ class TreeFrame extends Component {
             modalType: 1   //1:new folder,2:new file,3 rename folder
         }
     }
-
     //Life cycle of component
     componentDidMount() {
         getTreeData().then(response => {
@@ -106,25 +105,15 @@ class TreeFrame extends Component {
         });
         document.addEventListener('click', this._handleClickOutside);
         document.addEventListener('scroll', this._handleScroll);
-        this.eventUpdateEmitter = emitter.on("updateTreeNode", (blog) => {
-            const id = blog.id;
-            if (blog.id) {
-                const treeData = this.state.treeData;
-                if (updateNode(id, blog, treeData)) {
-                    this.setState({treeData});
-                }
-            }
-        });
+        emitter.on("updateTreeNode", this._eventUpdateArticleEmitter);
     };
 
     componentWillUnmount() {
         document.removeEventListener('click', this._handleClickOutside);
         document.removeEventListener('scroll', this._handleScroll);
-        emitter.removeListener(this.eventUpdateEmitter);
-        // console.log('tree componentWillUnmount')
+        emitter.off("updateTreeNode",this._eventUpdateArticleEmitter);
 
     }
-
 
     //tree event
     onSelect = (selectedKeys, info) => {
@@ -266,6 +255,15 @@ class TreeFrame extends Component {
             }
         });
     };
+    _eventUpdateArticleEmitter = (blog)=>{
+        const id = blog.id;
+        if (blog.id) {
+            const treeData = this.state.treeData;
+            if (updateNode(id, blog, treeData)) {
+                this.setState({treeData});
+            }
+        }
+    }
 
     //render UI
     renderMenu({pageX, pageY}) {
@@ -314,13 +312,13 @@ class TreeFrame extends Component {
                 const afterStr = item.title.substr(index + searchValue.length);
                 const title =
                     index > -1 ? (
-                        <span>
+                        <Tooltip title={item.title}><span>
                             {beforeStr}
                             <span style={{color: '#f50', background: '#fcc666'}}>{searchValue}</span>
                             {afterStr}
-                        </span>
+                        </span></Tooltip>
                     ) : (
-                        <span>{item.title}</span>
+                        <Tooltip title={item.title}><span>{item.title}</span></Tooltip>
                     );
 
                 if (item.children) {
@@ -331,7 +329,7 @@ class TreeFrame extends Component {
                     );
                 }
                 // return <TreeNode {...item} />;
-                return <TreeNode key={item.id} title={title} dataRef={item} isLeaf={item.type === 2}></TreeNode>
+                return <TreeNode key={item.id} title={title} dataRef={item} isLeaf={item.type === 2}/>
             });
         return (
             <>
