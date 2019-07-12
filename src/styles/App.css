@@ -2,24 +2,60 @@
     height: 100%;
 }
 
+/*Login*/
+.login-form {
+    max-width: 300px;
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    margin-left: -150px !important;
+    margin-top: -150px !important;
+}
+
+.login-form-forgot {
+    float: right;
+}
+
+.login-form-button {
+    width: 100%;
+}
+
+/*Register*/
+.register-form {
+    width: 500px;
+    top: 50%;
+    left: 50%;
+    position: absolute;
+    margin-left: -250px !important;
+    margin-top: -250px !important;
+}
+
+/*Antd Global*/
 .ant-layout-content {
-    height:100%;
-    overflow-y: hidden;
-}
-.wangeditor {
     height: 100%;
-}
-.wangeditor .w-e-toolbar{
-    flex-wrap: wrap;
-}
-.wangeditor .w-e-text-container{
-    height: calc(100% - 33px) !important;
+    overflow-y: hidden;
 }
 
 .ant-menu-item:hover {
     background-color: #e6f7ff;
 }
+
 .ant-tree-block-node {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+/*wangEditor*/
+.wangeditor {
+    height: 100%;
+}
+
+.wangeditor .w-e-toolbar {
+    flex-wrap: wrap;
+}
+
+.wangeditor .w-e-text-container {
+    height: calc(100% - 33px) !important;
+}
+
+

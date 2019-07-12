@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Route, Redirect,Switch} from 'react-router-dom';
-import {Login, Home} from './components/index'
+import {Login, Home,Register} from './components/index'
 
 class App extends Component {
     render() {
@@ -10,6 +10,7 @@ class App extends Component {
                 <Switch>
                     <Route component={Login} path='/login'/>
                     <Route component={Home} path='/home'/>
+                    <Route component={Register} path='/register'/>
                     <Redirect to='/login' from='/'/>
                 </Switch>
             </>
