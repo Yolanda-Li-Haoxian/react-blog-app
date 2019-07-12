@@ -6,8 +6,9 @@ const Login = Form.create({ name: 'normal_login' })(
         handleSubmit = e => {
             e.preventDefault();
             this.props.form.validateFields((err, values) => {
-                if (!err) {
-                    this.props.history.push('/home');
+                if (err) {
+                    const location={pathname:'/home',state:{userName:'aaa'}};
+                    this.props.history.push(location);
                 }
             });
         };
@@ -48,7 +49,7 @@ const Login = Form.create({ name: 'normal_login' })(
                         <Button type="primary" htmlType="submit" className="login-form-button">
                             Log in
                         </Button>
-                        Or <Link to="/register">register now!</Link>
+                        Or <Link to="/register">register now</Link>
                     </Form.Item>
                 </Form>
             );

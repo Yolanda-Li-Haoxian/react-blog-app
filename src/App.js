@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Route, Redirect,Switch} from 'react-router-dom';
-import {Login, Home,Register} from './components/index'
+import {Login, Home,Register} from './components/routers'
 
 class App extends Component {
     render() {

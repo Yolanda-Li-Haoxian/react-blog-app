@@ -25,20 +25,20 @@ const Register = Form.create({name: 'register'})(
             e.preventDefault();
             this.props.form.validateFieldsAndScroll((err, values) => {
                 if (!err) {
-                    console.log('Received values of form: ', values);
+                    this.props.history.push('/login');
                 }
             });
         };
 
         handleConfirmBlur = e => {
             const {value} = e.target;
-            this.setState({confirmDirty: this.state.confirmDirty || !!value});
+            this.setState({confirmDirty: this.state.confirmDirty || !value});
         };
 
         compareToFirstPassword = (rule, value, callback) => {
             const {form} = this.props;
             if (value && value !== form.getFieldValue('password')) {
-                callback('Two passwords that you enter is inconsistent!');
+                callback('Two passwords that you enter is inconsistent.');
             } else {
                 callback();
             }
@@ -91,11 +91,11 @@ const Register = Form.create({name: 'register'})(
                             rules: [
                                 {
                                     type: 'email',
-                                    message: 'The input is not valid E-mail!',
+                                    message: 'The input is not valid E-mail.',
                                 },
                                 {
                                     required: true,
-                                    message: 'Please input your E-mail!',
+                                    message: 'Please input your E-mail.',
                                 },
                             ],
                         })(<Input/>)}
@@ -105,7 +105,7 @@ const Register = Form.create({name: 'register'})(
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please input your password!',
+                                    message: 'Please input your password.',
                                 },
                                 {
                                     validator: this.validateToNextPassword,
@@ -118,7 +118,7 @@ const Register = Form.create({name: 'register'})(
                             rules: [
                                 {
                                     required: true,
-                                    message: 'Please confirm your password!',
+                                    message: 'Please confirm your password.',
                                 },
                                 {
                                     validator: this.compareToFirstPassword,
@@ -137,12 +137,12 @@ const Register = Form.create({name: 'register'})(
                         }
                     >
                         {getFieldDecorator('nickname', {
-                            rules: [{required: true, message: 'Please input your nickname!', whitespace: true}],
+                            rules: [{required: true, message: 'Please input your nickname.', whitespace: true}],
                         })(<Input/>)}
                     </Form.Item>
                     <Form.Item label="Phone Number">
                         {getFieldDecorator('phone', {
-                            rules: [{required: true, message: 'Please input your phone number!'}],
+                            rules: [{required: true, message: 'Please input your phone number.'}],
                         })(<Input addonBefore={prefixSelector} style={{width: '100%'}}/>)}
                     </Form.Item>
                     <Form.Item {...tailFormItemLayout}>
