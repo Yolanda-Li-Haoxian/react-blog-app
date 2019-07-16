@@ -3,6 +3,9 @@ import axios from 'axios';
 const service = axios.create({
     baseURL: 'http://rap2api.taobao.org/app/mock/224135'
 });
+const service1 = axios.create({
+    baseURL: 'http://rap2api.taobao.org/app/mock/224135'
+});
 
 // 添加一个请求拦截器
 service.interceptors.request.use(function (config) {
@@ -42,14 +45,17 @@ export const updateFolder = (node) => {
     return service.post('/api/blog/updateFolder', node);
 };
 export const getUserById = (id) => {
-    return service.post('/api/user /getUserById', {id});
+    return service.post('/api/user/getUserById', {id});
 };
 export const updateUser = (user) => {
-    return service.post('/api/user /updateUser', user);
+    return service.post('/api/user/updateUser', user);
 };
 export const insertUser = (user) => {
-    return service.post('/api/user /insertUser', user);
+    return service.post('/api/user/insertUser', user);
 };
 export const deleteUser = (id) => {
-    return service.post('/api/user /deleteUser', id);
+    return service.post('/api/user/deleteUser', id);
 };
+export const loginSrv = (userInfo)=>{
+    return service1.post('/api/user/login', userInfo);
+}
