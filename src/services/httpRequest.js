@@ -50,8 +50,8 @@ export const getUserById = (id) => {
 export const updateUser = (user) => {
     return service.post('/api/user/updateUser', user);
 };
-export const insertUser = (user) => {
-    return service.post('/api/user/insertUser', user);
+export const registerUser = (user) => {
+    return service.post('/api/user/insertUser', {user});
 };
 export const deleteUser = (id) => {
     return service.post('/api/user/deleteUser', id);

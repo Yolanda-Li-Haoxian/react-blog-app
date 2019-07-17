@@ -4,12 +4,13 @@
 
 /*Login*/
 .login-form {
-    max-width: 300px;
+    width: 500px;
     top: 50%;
     left: 50%;
     position: absolute;
-    margin-left: -150px !important;
-    margin-top: -150px !important;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 .login-form-forgot {
@@ -26,8 +27,9 @@
     top: 50%;
     left: 50%;
     position: absolute;
-    margin-left: -250px !important;
-    margin-top: -250px !important;
+    -webkit-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
 }
 
 /*Antd Global*/

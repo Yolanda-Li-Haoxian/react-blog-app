@@ -5,17 +5,13 @@ import {Tree, Icon, Menu, Input, Modal, message, Tooltip} from 'antd';
 import AddFileModal from './modal/AddFileModal'
 import emitter from "../events";
 import {getTreeData, deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest'
+import {getGUID} from "../services/commenSrv";
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
 const dataList = [];
 let editNode = {};
-const getGUID = () => {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-        return v.toString(16);
-    });
-}
+
 
 const getParentId = (id, tree) => {
     let parentKey;

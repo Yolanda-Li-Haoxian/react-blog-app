@@ -30,7 +30,7 @@ export const login = (user) => {
                 if (resp.data.status === 200) {
                     // resp.data.data.userName = user.username;
                     const {authToken, ...userInfo} = resp.data.data;
-                    if (userInfo.remember) {
+                    if (user.remember) {
                         window.localStorage.setItem('authToken', authToken);
                         window.localStorage.setItem('userInfo', JSON.stringify(userInfo));
                     } else {
