@@ -8,11 +8,7 @@ import {
     Icon,
     Card,
     Select,
-    Row,
-    Col,
-    Checkbox,
     Button,
-    AutoComplete,
 } from 'antd';
 import {registerUser} from '../services/httpRequest'
 import {getGUID} from "../services/commenSrv";

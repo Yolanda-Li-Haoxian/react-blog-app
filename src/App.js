@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {Route, Redirect, Switch} from 'react-router-dom';
-import {Login, Home, Register} from './components/routers'
+import {Login, Home, Register} from './routers'
 import {connect} from 'react-redux';
 
 const mapState = (state) => ({

@@ -1,7 +1,9 @@
 import {combineReducers} from 'redux';
-import blogs from './blogs';
+import directoryTree from './directoryTree';
 import user from './user';
+import article from './article';
 export default combineReducers({
-    blogs,
-    user
+    directoryTree,
+    user,
+    article
 })

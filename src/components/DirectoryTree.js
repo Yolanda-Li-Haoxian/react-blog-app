@@ -1,17 +1,23 @@
 import React, {Component} from 'react';
 import ReactDOM from 'react-dom';
+import {connect} from 'react-redux';
 import 'antd/dist/antd.css';
-import {Tree, Icon, Menu, Input, Modal, message, Tooltip} from 'antd';
-import AddFileModal from './modal/AddFileModal'
-import emitter from "../events";
-import {getTreeData, deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest'
+import {Tree, Icon, Menu, Input, Modal, message, Tooltip, Spin} from 'antd';
+import AddFileModal from './modal/AddFileModal';
+import {loadTreeData,deleteTreeNode} from '../actions/directoryTree';
+import {updateArticle} from '../actions/article';
+import {deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest';
 import {getGUID} from "../services/commenSrv";
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
 const dataList = [];
 let editNode = {};
-
+const mapStateToProps = (state) => ({
+    userId: state.user.id,
+    treeData: state.directoryTree.treeData,
+    isLoading: state.directoryTree.isLoading
+});
 
 const getParentId = (id, tree) => {
     let parentKey;
@@ -56,18 +62,7 @@ const updateNode = (id, node, tree) => {
     }
     return false;
 };
-const deleteNode = (type, id, tree) => {
-    for (let i = 0; i < tree.length; i++) {
-        if (tree[i].id === id) {
-            tree.splice(i, 1);
-            return true;
-        }
-        if (tree[i].children && deleteNode(type, id, tree[i].children)) {
-            return true;
-        }
-    }
-    return false;
-}
+
 const generateList = data => {
     for (let i = 0; i < data.length; i++) {
         const node = data[i];
@@ -79,12 +74,11 @@ const generateList = data => {
     }
 };
 
-class TreeFrame extends Component {
+class ArticlesTree extends Component {
     constructor(props) {
         super(props);
         this.state = {
             selectedKey: [],
-            treeData: [],
             searchValue: '',
             showEditModal: false,
             expandedKeys: [],
@@ -92,29 +86,28 @@ class TreeFrame extends Component {
             modalType: 1   //1:new folder,2:new file,3 rename folder
         }
     }
+
     //Life cycle of component
+    componentWillMount() {
+        this.props.loadTreeData(this.props.userId);
+        generateList(this.props.treeData);
+    }
+
     componentDidMount() {
-        getTreeData().then(response => {
-            const treeData = response.treeData;
-            this.setState({treeData});
-            generateList(treeData);
-        });
         document.addEventListener('click', this._handleClickOutside);
         document.addEventListener('scroll', this._handleScroll);
-        emitter.on("updateTreeNode", this._eventUpdateArticleEmitter);
     };
 
     componentWillUnmount() {
         document.removeEventListener('click', this._handleClickOutside);
         document.removeEventListener('scroll', this._handleScroll);
-        emitter.off("updateTreeNode",this._eventUpdateArticleEmitter);
 
     }
 
     //tree event
     onSelect = (selectedKeys, info) => {
         const blog = info.node.props.dataRef;
-        blog.type === 2 && emitter.emit("updateContent", 'selectedTreeNode', blog);
+        blog.type === 2 && this.props.updateArticle(blog);
     };
     onRightClick = ({event, node}) => {
         const {pageX, pageY} = event;
@@ -137,7 +130,8 @@ class TreeFrame extends Component {
         this.setState({showEditModal: true, modalType: 2})
     };
     onDelete = () => {
-        const {selectedKey, treeData} = this.state;
+        const {selectedKey} = this.state;
+        const {treeData} = this.props;
         const {confirm} = Modal;
         const that = this;
         confirm({
@@ -147,9 +141,7 @@ class TreeFrame extends Component {
             onOk() {
                 deleteTreeNodeById(selectedKey).then(response => {
                     message.success(response.msg);
-                    if (deleteNode(2, selectedKey, treeData)) {
-                        that.setState({treeData});
-                    }
+                    that.props.deleteTreeNode(2, selectedKey, treeData);
                 });
             },
             onCancel() {
@@ -159,7 +151,7 @@ class TreeFrame extends Component {
     };
     onSearch = e => {
         const {value} = e.target;
-        const {treeData} = this.state;
+        const {treeData} = this.props;
         const expandedKeys = dataList.map(item => {
             if (item.title.indexOf(value) > -1) {
                 return getParentId(item.id, treeData);
@@ -228,16 +220,19 @@ class TreeFrame extends Component {
         }
         return this.cmContainer;
     }
+
     _createTreeNode = (node) => {
-        const {selectedKey, treeData, modalType} = this.state;
+        const {treeData}=this.props;
+        const {selectedKey, modalType} = this.state;
         let createTime = new Date().toLocaleString();
         let author = 'lhx';
         let guid = getGUID();
         let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
         insertTreeNode(newNode).then(response => {
             if (insertNode(modalType, selectedKey, treeData, newNode)) {
-                modalType === 2 && emitter.emit("updateContent", 'onCreateNode', newNode);
-                this.setState({treeData, showEditModal: false});
+                modalType === 2 && this.props.updateArticle(newNode);
+
+                this.setState({showEditModal: false});
             }
         })
     };
@@ -245,21 +240,12 @@ class TreeFrame extends Component {
         node.id = this.state.selectedKey;
         updateFolder(node).then(response => {
             message.success(response.msg);
-            const {treeData, showEditModal} = this.state;
-            if (updateNode(node.id, node, this.state.treeData)) {
-                this.setState({treeData, showEditModal: false});
+            const {treeData} = this.props;
+            if (updateNode(node.id, node, treeData)) {
+                this.setState({showEditModal: false});
             }
         });
     };
-    _eventUpdateArticleEmitter = (blog)=>{
-        const id = blog.id;
-        if (blog.id) {
-            const treeData = this.state.treeData;
-            if (updateNode(id, blog, treeData)) {
-                this.setState({treeData});
-            }
-        }
-    }
 
     //render UI
     renderMenu({pageX, pageY}) {
@@ -324,20 +310,21 @@ class TreeFrame extends Component {
                         </TreeNode>
                     );
                 }
-                // return <TreeNode {...item} />;
                 return <TreeNode key={item.id} title={title} dataRef={item} isLeaf={item.type === 2}/>
             });
         return (
             <>
                 <Search style={{marginBottom: 8}} placeholder="Search" onChange={this.onSearch}/>
-                <DirectoryTree onSelect={this.onSelect}
-                               onRightClick={this.onRightClick}
-                               blockNode
-                               expandedKeys={expandedKeys}
-                               autoExpandParent={autoExpandParent}
-                               onExpand={this.onExpand}>
-                    {renderTreeNodes(this.state.treeData)}
-                </DirectoryTree>
+                <Spin spinning={this.props.isLoading}>
+                    <DirectoryTree onSelect={this.onSelect}
+                                   onRightClick={this.onRightClick}
+                                   blockNode
+                                   expandedKeys={expandedKeys}
+                                   autoExpandParent={autoExpandParent}
+                                   onExpand={this.onExpand}>
+                        {renderTreeNodes(this.props.treeData)}
+                    </DirectoryTree>
+                </Spin>
                 <AddFileModal visible={showEditModal}
                               editNode={editNode}
                               modalType={modalType}
@@ -349,4 +336,4 @@ class TreeFrame extends Component {
     }
 }
 
-export default TreeFrame;
+export default connect(mapStateToProps, {loadTreeData,deleteTreeNode, updateArticle})(ArticlesTree);

@@ -2,13 +2,17 @@
  * Created by lihaoxian on 2019/6/25.
  */
 import React, {Component, createRef} from 'react';
+import {connect} from 'react-redux';
 import E from 'wangeditor';
 import {Input, Button, message, BackTop} from 'antd';
-import emitter from '../events';
-import {updateArticle} from '../services/httpRequest'
+import {initArticle} from '../actions/article';
+import {updateArticleNode} from '../actions/directoryTree';
+import {updateArticleSrv} from '../services/httpRequest';
 
-let editMode = false;
-let treeNodeKey = '';
+const mapStateToProps = (state) => ({
+    article: state.article,
+    treeData:state.directoryTree.treeData
+});
 
 class BlogContent extends Component {
     constructor(props) {
@@ -21,21 +25,12 @@ class BlogContent extends Component {
         }
     }
 
-    //life cycle
-    componentDidMount() {
-        emitter.on("updateContent", this._eventUpdateEmitter);
-    }
-
-    componentWillUnmount() {
-        emitter.off("updateContent", this._eventUpdateEmitter);
-    }
 
     //UI event
     onChangeTitle = (e) => {
-        this.setState({title: e.target.value});
+        this.props.article.title = e.target.value;
     };
     onEdit = () => {
-        editMode = true;
         this.setState({
             preview: false,
         }, () => {
@@ -43,19 +38,18 @@ class BlogContent extends Component {
         });
     };
     onSave = () => {
-        const title = this.state.title;
+        const {id,title}=this.props.article;
         if (!title) {
             message.error('Please Input the title.');
             return;
         }
         const value = this.editor.txt.html();
-        const node = {id: treeNodeKey, title, value};
-        updateArticle(node).then(response => {
+        const node = {id, title, value};
+        updateArticleSrv(node).then(response => {
+            this.props.updateArticleNode(node,this.props.treeData);
             message.success(response.msg);
-            emitter.emit('updateTreeNode', node);
             this.setState({
                 preview: true,
-                value
             });
         });
 
@@ -66,12 +60,10 @@ class BlogContent extends Component {
         this.editor = new E(this.editorRef.current);
         this.editor.customConfig.zIndex = 1;
         this.editor.create();
-        this.editor.txt.html(this.state.value);
+        this.editor.txt.html(this.props.article.value);
     }
     _eventUpdateEmitter = (type, blog) => {
-        treeNodeKey = blog.id;
         if (type === 'selectedTreeNode') {
-            editMode = true;
             this.setState({
                 preview: true,
                 value: blog.value,
@@ -79,7 +71,6 @@ class BlogContent extends Component {
             })
 
         } else if (type === 'onCreateNode') {
-            editMode = true;
             this.setState({
                 preview: false,
                 value: '',
@@ -93,7 +84,8 @@ class BlogContent extends Component {
 
     //render UI
     render() {
-        const {preview, value, title} = this.state;
+        const {preview} = this.state;
+        const {value, title} = this.props.article;
         if (preview) {
             //preview mode
             return (
@@ -124,4 +116,4 @@ class BlogContent extends Component {
     }
 }
 
-export default BlogContent;
+export default connect(mapStateToProps, {initArticle, updateArticleNode})(BlogContent);

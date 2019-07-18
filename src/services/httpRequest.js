@@ -29,16 +29,16 @@ service.interceptors.response.use(function (response) {
     // Do something with response error
     return Promise.reject(error);
 });
-export const getTreeData = () => {
-    return service.post('/api/blog/getTree')
+export const getTreeDataSrv = (userId) => {
+    return service.post('/api/blog/getTree',userId)
 };
 export const insertTreeNode = (node) => {
     return service.post('/api/blog/insertTreeNode', node);
 };
 export const deleteTreeNodeById = (id) => {
-    return service.delete('/api/blog/deleteTreeNode', {id});
+    return service.delete('/api/blog/deleteTreeNode',id);
 };
-export const updateArticle = (node) => {
+export const updateArticleSrv = (node) => {
     return service.post('/api/blog/updateArticle', node);
 };
 export const updateFolder = (node) => {
