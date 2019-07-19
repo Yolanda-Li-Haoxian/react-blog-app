@@ -20,11 +20,10 @@ class Home extends Component {
             title: 'Do you Want to exit this current account?',
             content: 'It will go to the login page.',
             onOk: () => {
-                console.log(this.props);
                 this.props.logout()
             },
             onCancel() {
-                console.log('Cancel');
+                //nothing
             },
         });
     };

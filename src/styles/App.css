@@ -49,7 +49,7 @@
 
 /*wangEditor*/
 .wangeditor {
-    height: 100%;
+    height: calc(100% - 50px);
 }
 
 .wangeditor .w-e-toolbar {
@@ -57,7 +57,7 @@
 }
 
 .wangeditor .w-e-text-container {
-    height: calc(100% - 33px) !important;
+    height: calc(100% - 40px) !important;
 }
 
 

@@ -4,31 +4,47 @@
 import React, {Component, createRef} from 'react';
 import {connect} from 'react-redux';
 import E from 'wangeditor';
-import {Input, Button, message, BackTop} from 'antd';
+import {Input, Button, message, BackTop, Typography, Descriptions} from 'antd';
 import {initArticle} from '../actions/article';
 import {updateArticleNode} from '../actions/directoryTree';
 import {updateArticleSrv} from '../services/httpRequest';
 
-const mapStateToProps = (state) => ({
-    article: state.article,
-    treeData:state.directoryTree.treeData
-});
+const {Title} = Typography;
+
+const mapStateToProps = (state) => {
+    return {
+        article: state.article,
+        treeData: state.directoryTree.treeData,
+        // isLoading: state.directoryTree.isLoading  //首次加载时显示第一篇文章
+    }
+};
 
 class BlogContent extends Component {
     constructor(props) {
         super(props);
         this.editorRef = createRef();
         this.state = {
-            value: '',
-            title: '',
             preview: true
         }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        //     //第一次加载第一篇文章
+        //     if(prevProps.isLoading&&!prevProps.article.id){
+        //         console.log('Component DID UPDATE!',this.props.treeData)
+        //     }
+
+        if (this.props.article.id !== prevProps.article.id && !this.state.preview) {
+            message.warning('Please save the current article first.');
+            return;
+        }
+        this.title = this.props.article.title;
     }
 
 
     //UI event
     onChangeTitle = (e) => {
-        this.props.article.title = e.target.value;
+        this.title = e.target.value;
     };
     onEdit = () => {
         this.setState({
@@ -38,15 +54,16 @@ class BlogContent extends Component {
         });
     };
     onSave = () => {
-        const {id,title}=this.props.article;
-        if (!title) {
+        if (!this.title) {
             message.error('Please Input the title.');
             return;
         }
+        const {id} = this.props.article;
         const value = this.editor.txt.html();
+        const title = this.title;
         const node = {id, title, value};
         updateArticleSrv(node).then(response => {
-            this.props.updateArticleNode(node,this.props.treeData);
+            this.props.updateArticleNode(node, this.props.treeData);
             message.success(response.msg);
             this.setState({
                 preview: true,
@@ -54,6 +71,11 @@ class BlogContent extends Component {
         });
 
     };
+    onCancel = () => {
+        this.setState({
+            preview: true,
+        });
+    }
 
     //static function
     _initEditor = () => {
@@ -62,42 +84,28 @@ class BlogContent extends Component {
         this.editor.create();
         this.editor.txt.html(this.props.article.value);
     }
-    _eventUpdateEmitter = (type, blog) => {
-        if (type === 'selectedTreeNode') {
-            this.setState({
-                preview: true,
-                value: blog.value,
-                title: blog.title
-            })
-
-        } else if (type === 'onCreateNode') {
-            this.setState({
-                preview: false,
-                value: '',
-                title: blog.title
-            }, () => {
-                this._initEditor();
-            })
-        }
-    }
 
 
     //render UI
     render() {
         const {preview} = this.state;
-        const {value, title} = this.props.article;
+        const {value, title, author, createAt,lastUpdate} = this.props.article;
         if (preview) {
             //preview mode
             return (
                 <div style={{borderLeft: '1px solid #ccc', padding: '0 10px', height: '100%', overflowY: 'auto'}}
                      id="scroll">
                     <BackTop target={() => document.getElementById('scroll')}/>
-                    <h1 style={{
-                        width: '90%', display: 'inline-block', overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap'
-                    }}>{title}</h1>
-                    <Button type="link" icon="edit" onClick={this.onEdit}>Edit</Button>
+                    <Title level={3} ellipsis style={{width: '90%', display: 'inline-block'}}>{title}</Title>
+                    <Button disabled={!title} style={{float: 'right'}} type="link" icon="edit" size='large'
+                            onClick={this.onEdit}>Edit</Button>
+                    {title ?
+                        <Descriptions>
+                            <Descriptions.Item label="Created">{author}</Descriptions.Item>
+                            <Descriptions.Item label="Creation Time">{createAt}</Descriptions.Item>
+                            <Descriptions.Item label="Last update Time">{lastUpdate}</Descriptions.Item>
+                        </Descriptions>
+                        : null}
                     <div dangerouslySetInnerHTML={{__html: value}}/>
                 </div>
             )
@@ -109,6 +117,7 @@ class BlogContent extends Component {
                            style={{marginBottom: '12px', marginRight: '12px', width: '90%', color: '#40a9ff'}}
                            defaultValue={title}/>
                     <Button type="primary" onClick={this.onSave}>Save</Button>
+                    <Button type="link" onClick={this.onCancel}>Cancel</Button>
                     <div ref={this.editorRef} className='wangeditor'/>
                 </>
             )
