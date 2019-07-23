@@ -4,6 +4,7 @@
 import React, {Component, createRef} from 'react';
 import {connect} from 'react-redux';
 import E from 'wangeditor';
+import moment from 'moment';
 import {Input, Button, message, BackTop, Typography, Descriptions} from 'antd';
 import {initArticle} from '../actions/article';
 import {updateArticleNode} from '../actions/directoryTree';
@@ -13,7 +14,7 @@ const {Title} = Typography;
 
 const mapStateToProps = (state) => {
     return {
-        article: state.article,
+        article: state.article.articleData,
         treeData: state.directoryTree.treeData,
         // isLoading: state.directoryTree.isLoading  //首次加载时显示第一篇文章
     }
@@ -24,7 +25,9 @@ class BlogContent extends Component {
         super(props);
         this.editorRef = createRef();
         this.state = {
-            preview: true
+            preview: true,
+            lastUpdate: '',
+            title: ''
         }
     }
 
@@ -38,13 +41,18 @@ class BlogContent extends Component {
             message.warning('Please save the current article first.');
             return;
         }
-        this.title = this.props.article.title;
     }
 
+    componentWillReceiveProps(nextProps) {
+        this.setState({
+            title: nextProps.article.title,
+            lastUpdate: nextProps.article.lastUpdate
+        });
+    }
 
     //UI event
     onChangeTitle = (e) => {
-        this.title = e.target.value;
+        this.setState({title: e.target.value});
     };
     onEdit = () => {
         this.setState({
@@ -54,19 +62,22 @@ class BlogContent extends Component {
         });
     };
     onSave = () => {
-        if (!this.title) {
+        const {title} = this.state;
+        if (!title) {
             message.error('Please Input the title.');
             return;
         }
         const {id} = this.props.article;
         const value = this.editor.txt.html();
-        const title = this.title;
-        const node = {id, title, value};
+        const lastUpdate = new Date().getTime();
+        const node = {id, title, value, lastUpdate};
         updateArticleSrv(node).then(response => {
             this.props.updateArticleNode(node, this.props.treeData);
             message.success(response.msg);
             this.setState({
                 preview: true,
+                title,
+                lastUpdate
             });
         });
 
@@ -88,8 +99,10 @@ class BlogContent extends Component {
 
     //render UI
     render() {
-        const {preview} = this.state;
-        const {value, title, author, createAt,lastUpdate} = this.props.article;
+        const {preview, lastUpdate, title} = this.state;
+        const {value, author, createAt} = this.props.article;
+        const updateTime = lastUpdate && moment(lastUpdate).format('YYYY-MM-DD HH:mm:ss');
+        const createTime = createAt && moment(createAt).format('YYYY-MM-DD HH:mm:ss');
         if (preview) {
             //preview mode
             return (
@@ -100,10 +113,11 @@ class BlogContent extends Component {
                     <Button disabled={!title} style={{float: 'right'}} type="link" icon="edit" size='large'
                             onClick={this.onEdit}>Edit</Button>
                     {title ?
+
                         <Descriptions>
                             <Descriptions.Item label="Created">{author}</Descriptions.Item>
-                            <Descriptions.Item label="Creation Time">{createAt}</Descriptions.Item>
-                            <Descriptions.Item label="Last update Time">{lastUpdate}</Descriptions.Item>
+                            <Descriptions.Item label="Creation Time">{createTime}</Descriptions.Item>
+                            <Descriptions.Item label="Last update Time">{updateTime}</Descriptions.Item>
                         </Descriptions>
                         : null}
                     <div dangerouslySetInnerHTML={{__html: value}}/>
