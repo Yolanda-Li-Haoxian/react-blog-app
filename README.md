@@ -11,18 +11,14 @@
 
 git clone https://github.com/Yolanda-Li-Haoxian/react-blog-app.git
 
-### `3.切换到dev分支`
-
-git checkout dev
-
-### `4.从远程分支拉取最新代码`
+### `3.从远程分支拉取最新代码`
 
 git pull
 
-### `5.安装依赖包`
+### `4.安装依赖包`
 
 npm install
 
-### `6.启动项目`
+### `5.启动项目`
 
 npm start
