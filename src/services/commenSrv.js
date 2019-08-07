@@ -5,3 +5,6 @@ export const getGUID = () => {
         return v.toString(16);
     });
 }
+export const getUser = ()=>{
+    return JSON.parse(window.localStorage.getItem('userInfo')||window.sessionStorage.getItem('userInfo'));
+}

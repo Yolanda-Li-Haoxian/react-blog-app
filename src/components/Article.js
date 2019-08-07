@@ -101,6 +101,7 @@ class BlogContent extends Component {
     render() {
         const {preview, lastUpdate, title} = this.state;
         const {value, author, createAt} = this.props.article;
+        console.log(author)
         const updateTime = lastUpdate && moment(lastUpdate).format('YYYY-MM-DD HH:mm:ss');
         const createTime = createAt && moment(createAt).format('YYYY-MM-DD HH:mm:ss');
         if (preview) {

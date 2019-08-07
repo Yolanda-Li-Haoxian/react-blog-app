@@ -4,10 +4,10 @@ import {connect} from 'react-redux';
 import 'antd/dist/antd.css';
 import {Tree, Icon, Menu, Input, Modal, message, Tooltip, Spin} from 'antd';
 import AddFileModal from './modal/AddFileModal';
-import {loadTreeData,deleteTreeNode} from '../actions/directoryTree';
+import {loadTreeData, deleteTreeNode} from '../actions/directoryTree';
 import {updateArticle} from '../actions/article';
 import {deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest';
-import {getGUID} from "../services/commenSrv";
+import {getGUID, getUser} from "../services/commenSrv";
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
@@ -222,12 +222,19 @@ class ArticlesTree extends Component {
     }
 
     _createTreeNode = (node) => {
-        const {treeData}=this.props;
+        const {treeData} = this.props;
         const {selectedKey, modalType} = this.state;
         let createTime = new Date().toLocaleString();
-        let author = 'lhx';
+        let author = getUser().userName;
         let guid = getGUID();
-        let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
+        let newNode = {
+            title: node.title,
+            id: guid,
+            type: modalType,
+            createAt: createTime,
+            author: author,
+            lastUpdate: createTime
+        };
         insertTreeNode(newNode).then(response => {
             if (insertNode(modalType, selectedKey, treeData, newNode)) {
                 modalType === 2 && this.props.updateArticle(newNode);
@@ -336,4 +343,4 @@ class ArticlesTree extends Component {
     }
 }
 
-export default connect(mapStateToProps, {loadTreeData,deleteTreeNode, updateArticle})(ArticlesTree);
+export default connect(mapStateToProps, {loadTreeData, deleteTreeNode, updateArticle})(ArticlesTree);
