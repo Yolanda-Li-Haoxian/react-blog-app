@@ -27,16 +27,4 @@ export const updateArticle = (article) => {
         }
     }
 }
-export const initArticle = (article) => {
-    return {
-        type: actionType.INIT_ARTICLE,
-        payload: article
-    }
-}
-
-export const saveArticle = (article)=>{
-    return dispatch=>{
-        dispatch(loadedArticle(article));
-    }
-}
 
