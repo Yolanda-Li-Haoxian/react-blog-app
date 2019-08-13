@@ -63,16 +63,19 @@ export const loginSrv = (userInfo)=>{
 }
 //blog articles
 export const getBlogArticles = ()=>{
-    return service1.post('/api/blog/getBlogArticles');
+    return service.post('/api/blog/getBlogArticles');
 }
 
 //comment
 export const getCommentsByArticleId = (id)=>{
-    return service1.post('/api/comment/getCommentsByArticleId',{articleId:id});
+    return service.post('/api/comment/getCommentsByArticleId',{articleId:id});
 }
 export const addComment = (comment)=>{
-    return service1.post('/api/comment/insertComment',comment);
+    return service.post('/api/comment/insertComment',comment);
 }
-export const removeComment = (para)=>{
-    return service1.post('/api/comment/removeComment',para);
+export const updateComment = (para)=>{
+    return service.post('/api/comment/updateComment',para);
+}
+export const removeComment = (id)=>{
+    return service.post('/api/comment/removeComment',id);
 }

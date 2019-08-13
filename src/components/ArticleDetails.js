@@ -5,7 +5,7 @@ import moment from 'moment';
 
 import MainHeader from "./MainHeader";
 import Article from "./Article";
-import CommentDetails from "./CommentDetails";
+import CommentList from "./CommentList";
 
 const {Footer, Content} = Layout;
 
@@ -47,7 +47,7 @@ class ArticleDetails extends Component {
                 <Content style={{padding: '20px',height:'100%',overflowY:'auto'}} id='scroll'>
                     <BackTop target={() => document.getElementById('scroll')}/>
                     <Article showEditBtn={this.showEditBtn} article={this.article}/>
-                    <CommentDetails/>
+                    <CommentList articleId={this.article.id}/>
                 </Content>
                 <Footer style={{textAlign: 'center'}}>Blog Dev ©2019 Created by Yolanda Li</Footer>
             </Layout>

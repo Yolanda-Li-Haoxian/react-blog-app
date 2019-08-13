@@ -49,8 +49,8 @@ class Home extends Component {
 
     componentDidMount() {
         getBlogArticles().then(response=> {
-            if(response.data.status===200){
-                this.setState({articleList:response.data.data});
+            if(response.status===200){
+                this.setState({articleList:response.data});
             }
         });
     }
