@@ -1,7 +1,10 @@
 import React,{Component} from 'react';
+import {connect} from 'react-redux';
 import {Link} from 'react-router-dom';
-import {Layout,Button,Dropdown,Menu,Icon} from 'antd';
+import {Layout,Button,Dropdown,Menu,Icon,Modal} from 'antd';
+import {logout} from "../actions/user";
 const {Header}  = Layout;
+const {confirm} = Modal;
 const menu = (
     <Menu>
         <Menu.Item>
@@ -19,7 +22,22 @@ const menu = (
         </Menu.Item>
     </Menu>
 );
+const mapStateToProps = state => ({
+    userName: state.user.userName
+});
 class MainHeader extends Component {
+    onExit = () => {
+        confirm({
+            title: 'Do you Want to exit this current account?',
+            content: 'It will go to the login page.',
+            onOk: () => {
+                this.props.logout()
+            },
+            onCancel() {
+                //nothing
+            },
+        });
+    };
     render() {
         const {userName} = this.props;
         return (
@@ -39,4 +57,4 @@ class MainHeader extends Component {
         );
     };
 };
-export default MainHeader
+export default connect(mapStateToProps, {logout})(MainHeader);

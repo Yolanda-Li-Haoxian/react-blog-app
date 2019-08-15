@@ -2,7 +2,10 @@ import actionType from '../actions/actionType';
 
 const initState = {
     isLoading: false,
-    articleData: {id: '', author: '', createAt: '', title: '', value: '',lastUpdate:''}
+    articleData: {
+        id: '', author: '', createAt: '', title: '', value: '',
+        lastUpdate: '', likes: 0, favorites: 0, commentsCount: 0
+    }
 };
 export default (state = initState, action) => {
     switch (action.type) {

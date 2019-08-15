@@ -1,24 +1,16 @@
 import React, {Component} from 'react';
-import {Comment, Avatar, Form, Button, List, Input, Tooltip, Icon} from 'antd';
+import {Comment, Avatar, Tooltip, Icon} from 'antd';
 import moment from 'moment';
+import {connect} from 'react-redux';
 
-import {getCommentsByArticleId, addComment, updateComment,removeComment} from '../services/httpRequest';
-import {getGUID, getUser} from '../services/commenSrv'
+import {deleteCommentFromList} from "../../actions/comment";
+import {updateComment} from '../../services/httpRequest';
 
-const {TextArea} = Input;
-const userName = getUser().userName;
-const Editor = ({onChange, onSubmit, submitting, value}) => (
-    <div>
-        <Form.Item>
-            <TextArea rows={4} onChange={onChange} value={value} placeholder='想对作者说点什么'/>
-        </Form.Item>
-        <Form.Item>
-            <Button htmlType="submit" loading={submitting} onClick={onSubmit} type="primary">
-                Add Comment
-            </Button>
-        </Form.Item>
-    </div>
-);
+const mapStateToProps = (state) => {
+    return {
+        userName: state.user.userName
+    }
+}
 
 class CommentDetail extends Component {
     constructor(props) {
@@ -90,9 +82,7 @@ class CommentDetail extends Component {
     };
 
     delete = () => {
-        removeComment(this.state.comment.id).then(()=>{
-            this.props.delete();
-        });
+        this.props.deleteCommentFromList(this.state.comment.id);
     };
 
     render() {
@@ -109,7 +99,7 @@ class CommentDetail extends Component {
                 </Tooltip>
                 <span style={{paddingLeft: 8, cursor: 'auto'}}>{likes}</span>
             </span>,
-            <span key=' key="comment-basic-dislike"'>
+            <span key="comment-basic-dislike">
                 <Tooltip title="Dislike">
                   <Icon
                       type="dislike"
@@ -120,7 +110,7 @@ class CommentDetail extends Component {
                 <span style={{paddingLeft: 8, cursor: 'auto'}}>{dislikes}</span>
             </span>
         ];
-        if (userName === author) {
+        if (this.props.userName === author) {
             actions.push(
                 <span key="comment-basic-edit">Edit</span>,
                 <span key="comment-basic-delete" onClick={this.delete}>Delete</span>);
@@ -135,98 +125,4 @@ class CommentDetail extends Component {
     }
 }
 
-
-class CommentList extends Component {
-    state = {
-        comments: [],
-        submitting: false,
-        value: ''
-    };
-
-
-    componentDidMount() {
-        getCommentsByArticleId(this.props.articleId).then(data => {
-            this.setState({comments: data});
-        });
-    }
-
-    handleDelete = (index) => {
-        const {comments} = this.state;
-        comments.splice(index, 1);
-        this.setState({comments});
-    }
-
-    handleSubmit = () => {
-        const {value} = this.state;
-        if (!value) {
-            return;
-        }
-
-        this.setState({
-            submitting: true,
-        });
-        const dateTime = new Date().getTime();
-        const id = getGUID();
-        const para = {
-            id,
-            articleId: this.props.articleId,
-            author: userName,
-            content: value,
-            dateTime,
-            likes: 0,
-            dislikes: 0,
-            avatar: ''
-        }
-        addComment(para).then(() => {
-            this.setState({
-                submitting: false,
-                value: '',
-                comments: [
-                    para,
-                    ...this.state.comments
-                ]
-            });
-        });
-    };
-
-    handleChange = e => {
-        this.setState({
-            value: e.target.value,
-        });
-    };
-
-    render() {
-        const {comments, submitting, value} = this.state;
-        return (
-            <>
-                <Comment
-                    avatar={
-                        <Avatar
-                            icon="user"
-                            alt="Han Solo"
-                        />
-                    }
-                    content={
-                        <Editor
-                            onChange={this.handleChange}
-                            onSubmit={this.handleSubmit}
-                            submitting={submitting}
-                            value={value}
-                        />
-                    }
-                />
-                {comments.length > 0 &&
-                <List
-                    dataSource={comments}
-                    itemLayout="horizontal"
-                    renderItem={(item, index) => {
-                        return <li><CommentDetail key={item.id} delete={this.handleDelete.bind(this, index)} comment={item}/>
-                        </li>
-                    }}
-                />}
-            </>
-        );
-    }
-}
-
-export default CommentList;
+export default connect(mapStateToProps, {deleteCommentFromList})(CommentDetail);

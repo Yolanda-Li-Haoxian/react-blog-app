@@ -5,6 +5,7 @@ import {connect} from 'react-redux';
 import Article from './Article';
 import TreeFrame from './DirectoryTree'
 import MainHeader from "./MainHeader";
+import CONST_JSON from '../define_const_json';
 const {Content, Sider,Footer} = Layout;
 const mapState = (state) => ({
     article: state.article.articleData,
@@ -26,7 +27,7 @@ class ArticlesMgr extends Component {
                         <Article article={article} showEditBtn={true}/>
                     </Content>
                 </Layout>
-                <Footer style={{textAlign: 'center'}}>Blog Dev ©2019 Created by Yolanda Li</Footer>
+                <Footer style={{textAlign: 'center'}}>{CONST_JSON.FOOTER_WORDING}</Footer>
             </Layout>
         );
     }

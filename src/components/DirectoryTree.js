@@ -7,7 +7,7 @@ import AddFileModal from './modal/AddFileModal';
 import {loadTreeData, deleteTreeNode} from '../actions/directoryTree';
 import {updateArticle} from '../actions/article';
 import {deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest';
-import {getGUID, getUser} from "../services/commenSrv";
+import {getGUID} from "../services/commenSrv";
 
 const {Search} = Input;
 const {TreeNode, DirectoryTree} = Tree;
@@ -15,6 +15,7 @@ const dataList = [];
 let editNode = {};
 const mapStateToProps = (state) => ({
     userId: state.user.id,
+    userName: state.user.userName,
     treeData: state.directoryTree.treeData,
     isLoading: state.directoryTree.isLoading
 });
@@ -222,17 +223,16 @@ class ArticlesTree extends Component {
     }
 
     _createTreeNode = (node) => {
-        const {treeData} = this.props;
+        const {treeData, userName} = this.props;
         const {selectedKey, modalType} = this.state;
         let createTime = new Date().toLocaleString();
-        let author = getUser().userName;
         let guid = getGUID();
         let newNode = {
             title: node.title,
             id: guid,
             type: modalType,
             createAt: createTime,
-            author: author,
+            author: userName,
             lastUpdate: createTime
         };
         insertTreeNode(newNode).then(response => {

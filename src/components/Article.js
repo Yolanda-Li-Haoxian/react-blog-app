@@ -5,7 +5,7 @@ import React, {Component, createRef} from 'react';
 import {connect} from 'react-redux';
 import E from 'wangeditor';
 import moment from 'moment';
-import {Input, Button, message, BackTop, Typography, Descriptions} from 'antd';
+import {Input, Button, message, Typography, Descriptions} from 'antd';
 
 import {updateArticleNode} from '../actions/directoryTree';
 import {updateArticleSrv} from '../services/httpRequest';

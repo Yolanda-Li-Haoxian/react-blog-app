@@ -1,18 +1,18 @@
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
-import {Link} from 'react-router-dom';
-import '../styles/App.css';
-import 'antd/dist/antd.css';
-import MainHeader from './MainHeader';
-import TreeFrame from './DirectoryTree'
-import {Layout, Modal, Button, List, Descriptions, Icon, Dropdown, Menu} from 'antd';
-import Article from "./Article";
-import {getBlogArticles} from '../services/httpRequest';
-import {updateArticle} from '../actions/article';
-import {logout} from "../actions/user";
 
-const {Header, Content, Footer, Sider} = Layout;
-const {confirm} = Modal;
+import {Link} from 'react-router-dom';
+import moment from 'moment';
+import CONST_JSON from '../define_const_json';
+import '../styles/App.css';
+import MainHeader from './MainHeader';
+import {Layout, List, Descriptions, Icon} from 'antd';
+
+import {getBlogArticles} from '../services/httpRequest';
+
+
+
+const {Content, Footer} = Layout;
+
 const IconText = ({type, text}) => (
     <span>
         <Icon type={type} style={{marginRight: 8}}/>
@@ -20,84 +20,80 @@ const IconText = ({type, text}) => (
     </span>
 );
 
-const mapStateToProps = state => ({
-    userName: state.user.userName
-});
-
-
 class Home extends Component {
     constructor(props) {
         super(props);
         this.state = {
             articleList: [],
-            article: {}
+            loading:true
         };
     }
-
-    onExit = () => {
-        confirm({
-            title: 'Do you Want to exit this current account?',
-            content: 'It will go to the login page.',
-            onOk: () => {
-                this.props.logout()
-            },
-            onCancel() {
-                //nothing
-            },
-        });
-    };
-
+    componentWillMount() {
+        console.log('componentWillMount','props:'+this.props,'state:'+this.state)
+    }
     componentDidMount() {
-        getBlogArticles().then(response=> {
-            if(response.status===200){
-                this.setState({articleList:response.data});
-            }
+        console.log('componentDidMount','props:'+this.props,'state:'+this.state);
+        getBlogArticles().then(response => {
+            this.setState({articleList: response,loading:false});
         });
     }
+    componentWillReceiveProps(nextProps, nextContext) {
+        console.log('componentWillReceiveProps','nextProps:'+nextProps,'nextContext:'+nextContext);
+    }
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        console.log('shouldComponentUpdate','nextProps:'+nextProps,'nextState:'+nextState,'nextContext:'+nextContext);
+        return true;
+    }
+    componentWillUpdate(nextProps, nextState, nextContext) {
+        console.log('componentWillUpdate','nextProps:'+nextProps,'nextState:'+nextState,'nextContext:'+nextContext);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log('componentDidUpdate','prevProps:'+prevProps,'prevState:'+prevState,'snapshot:'+snapshot);
+    }
+
 
     render() {
-        const user = this.props.userName;
-        const {articleList} = this.state;
+        console.log('render');
+        const {articleList,loading} = this.state;
         return (
             <Layout style={{height: '100%'}}>
-                <MainHeader userName={user}/>
-                <Content style={{padding: '0 50px', height: '100%',overflowY:'auto'}}>
-                    <List dataSource={articleList} itemLayout='vertical'
+                <MainHeader/>
+                <Content style={{padding: '0 50px', height: '100%', overflowY: 'auto'}}>
+                    <List dataSource={articleList} itemLayout='vertical' loading={loading}
                           renderItem={item => (
                               <List.Item key={item.id} actions={[
-                                  <IconText type="star-o" text="156"/>,
-                                  <IconText type="like-o" text="156"/>,
-                                  <IconText type="message" text="2"/>,
+                                  <IconText type="star-o" text={item.favorites}/>,
+                                  <IconText type="like-o" text={item.likes}/>,
+                                  <IconText type="message" text={item.commentsCount}/>,
                               ]}>
-                                  <List.Item.Meta title={
-                                      <Link to={{
-                                          pathname:'/articleDetails',
-                                          search:JSON.stringify(item),
-                                          state: {article:item}
+                                  <List.Item.Meta
+                                      title={<Link to={{
+                                          pathname: '/articleDetails',
+                                          search: JSON.stringify(item),
+                                          state: {article: item}
                                       }}
-                                            target='_blank'
-                                      >{item.title}</Link>
-                                  }
-                                                  description={
-                                                      <Descriptions>
-                                                          <Descriptions.Item
-                                                              label="Created">{item.author}</Descriptions.Item>
-                                                          <Descriptions.Item
-                                                              label="Creation Time">{item.createTime}</Descriptions.Item>
-                                                          <Descriptions.Item
-                                                              label="Last update Time">{item.updateTime}</Descriptions.Item>
-                                                      </Descriptions>
-                                                  }/>
+                                                   target='_blank'>{item.title}</Link>}
+                                      description={
+                                          <Descriptions>
+                                              <Descriptions.Item
+                                                  label="Created">{item.author}</Descriptions.Item>
+                                              <Descriptions.Item
+                                                  label="Creation Time">{moment(item.createAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                              <Descriptions.Item
+                                                  label="Last update Time">{moment(item.lastUpdate).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                          </Descriptions>
+                                      }/>
                               </List.Item>
                           )}
                     />
                 </Content>
-                <Footer style={{textAlign: 'center'}}>Blog Dev ©2019 Created by Yolanda Li</Footer>
+                <Footer style={{textAlign: 'center'}}>{CONST_JSON.FOOTER_WORDING}</Footer>
             </Layout>
         );
     }
 }
 
-export default connect(mapStateToProps, {logout, updateArticle})(Home);
+export default Home;
 
 

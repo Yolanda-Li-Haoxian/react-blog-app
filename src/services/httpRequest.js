@@ -70,7 +70,7 @@ export const getBlogArticles = ()=>{
 export const getCommentsByArticleId = (id)=>{
     return service.post('/api/comment/getCommentsByArticleId',{articleId:id});
 }
-export const addComment = (comment)=>{
+export const insertComment = (comment)=>{
     return service.post('/api/comment/insertComment',comment);
 }
 export const updateComment = (para)=>{
