@@ -90,7 +90,7 @@ class CommentDetail extends Component {
         const datetime = moment(dateTime).format('YYYY-MM-DD HH:mm:ss');
         const actions = [
             <span key="comment-basic-like">
-                <Tooltip title="Like">
+                <Tooltip title="赞">
                   <Icon
                       type="like"
                       theme={this.state.action === 'liked' ? 'filled' : 'outlined'}
@@ -100,7 +100,7 @@ class CommentDetail extends Component {
                 <span style={{paddingLeft: 8, cursor: 'auto'}}>{likes}</span>
             </span>,
             <span key="comment-basic-dislike">
-                <Tooltip title="Dislike">
+                <Tooltip title="踩">
                   <Icon
                       type="dislike"
                       theme={this.state.action === 'disliked' ? 'filled' : 'outlined'}
@@ -112,10 +112,10 @@ class CommentDetail extends Component {
         ];
         if (this.props.userName === author) {
             actions.push(
-                <span key="comment-basic-edit">Edit</span>,
-                <span key="comment-basic-delete" onClick={this.delete}>Delete</span>);
+                <span key="comment-basic-edit">修改</span>,
+                <span key="comment-basic-delete" onClick={this.delete}>删除</span>);
         } else {
-            actions.push(<span key="comment-basic-reply-to">Reply to</span>);
+            actions.push(<span key="comment-basic-reply-to">回复</span>);
         }
         return <Comment actions={actions}
                         author={author}

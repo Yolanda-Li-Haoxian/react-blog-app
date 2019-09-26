@@ -321,7 +321,7 @@ class ArticlesTree extends Component {
             });
         return (
             <>
-                <Search style={{marginBottom: 8}} placeholder="Search" onChange={this.onSearch}/>
+                <Search style={{marginBottom: 8}} placeholder="搜索" onChange={this.onSearch}/>
                 <Spin spinning={this.props.isLoading}>
                     <DirectoryTree onSelect={this.onSelect}
                                    onRightClick={this.onRightClick}

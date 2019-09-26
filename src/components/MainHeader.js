@@ -8,16 +8,16 @@ const {confirm} = Modal;
 const menu = (
     <Menu>
         <Menu.Item>
-            <Link to={{pathname:'/articlesMgr'}} target="_blank" >My Articles</Link>
+            <Link to={{pathname:'/articlesMgr'}} target="_blank" >我的文章</Link>
         </Menu.Item>
         <Menu.Item>
             <a target="_blank" rel="noopener noreferrer" href="http://www.taobao.com/">
-                2nd menu item
+                个人中心
             </a>
         </Menu.Item>
         <Menu.Item>
             <a target="_blank" rel="noopener noreferrer" href="http://www.tmall.com/">
-                3rd menu item
+                设置
             </a>
         </Menu.Item>
     </Menu>
@@ -28,8 +28,8 @@ const mapStateToProps = state => ({
 class MainHeader extends Component {
     onExit = () => {
         confirm({
-            title: 'Do you Want to exit this current account?',
-            content: 'It will go to the login page.',
+            title: '确认退出吗？',
+            content: '退出将会回到登录页面。',
             onOk: () => {
                 this.props.logout()
             },
@@ -42,14 +42,14 @@ class MainHeader extends Component {
         const {userName} = this.props;
         return (
             <Header className="header">
-                <h1 style={{color: '#fff', display: 'inline-block'}}>Hello {userName}</h1>
+                <h1 style={{color: '#fff', display: 'inline-block'}}>Easy 博客欢迎你，{userName} 你好！</h1>
 
                 <Button type='link' style={{float: 'right', lineHeight: 'inherit'}}
-                        onClick={this.onExit}>Exit</Button>
+                        onClick={this.onExit}>退出</Button>
                 <div style={{float: 'right', lineHeight: 'inherit'}}>
                     <Dropdown overlay={menu} placement="bottomRight">
                         <Button type='link'>
-                            Menu<Icon type="down"/>
+                            菜单<Icon type="down"/>
                         </Button>
                     </Dropdown>
                 </div>

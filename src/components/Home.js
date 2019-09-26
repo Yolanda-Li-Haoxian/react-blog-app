@@ -77,11 +77,11 @@ class Home extends Component {
                                       description={
                                           <Descriptions>
                                               <Descriptions.Item
-                                                  label="Created">{item.author}</Descriptions.Item>
+                                                  label="创建者">{item.author}</Descriptions.Item>
                                               <Descriptions.Item
-                                                  label="Creation Time">{moment(item.createAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                                  label="创建时间">{moment(item.createAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
                                               <Descriptions.Item
-                                                  label="Last update Time">{moment(item.lastUpdate).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                                  label="上次更新时间">{moment(item.lastUpdate).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
                                           </Descriptions>
                                       }/>
                               </List.Item>

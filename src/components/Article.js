@@ -111,13 +111,13 @@ class Article extends Component {
                     {this.showEditBtn ?
                         <Button disabled={!title} style={{float: 'right'}} type="link" icon="edit"
                                 size='large'
-                                onClick={this.onEdit}>Edit</Button>
+                                onClick={this.onEdit}>编辑</Button>
                         : null}
                     {title ?
                         <Descriptions>
-                            <Descriptions.Item label="Created">{author}</Descriptions.Item>
-                            <Descriptions.Item label="Creation Time">{createTime}</Descriptions.Item>
-                            <Descriptions.Item label="Last update Time">{updateTime}</Descriptions.Item>
+                            <Descriptions.Item label="创建者">{author}</Descriptions.Item>
+                            <Descriptions.Item label="创建时间">{createTime}</Descriptions.Item>
+                            <Descriptions.Item label="上次更新时间">{updateTime}</Descriptions.Item>
                         </Descriptions>
                         : null}
                     <div dangerouslySetInnerHTML={{__html: value}}/>
@@ -130,8 +130,8 @@ class Article extends Component {
                     <Input size="large" placeholder="Title..." onChange={this.onChangeTitle}
                            style={{marginBottom: '12px', marginRight: '12px', width: '90%', color: '#40a9ff'}}
                            defaultValue={title}/>
-                    <Button type="primary" onClick={this.onSave}>Save</Button>
-                    <Button type="link" onClick={this.onCancel}>Cancel</Button>
+                    <Button type="primary" onClick={this.onSave}>保存</Button>
+                    <Button type="link" onClick={this.onCancel}>取消</Button>
                     <div ref={this.editorRef} className='wangeditor'/>
                 </>
             )
