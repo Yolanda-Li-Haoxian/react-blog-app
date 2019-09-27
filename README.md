@@ -1,4 +1,4 @@
-## 个人博客框架
+## 个人博客框架（react）
 ### 介绍
 个人博客 —— 轻量级个人博客框架，便于自己搭建博客，界面干净，使用简单，配置方便。涉及模块：
 
@@ -11,7 +11,7 @@
 4. 搜索功能
 
 ### 下载
-   源码地址：https://github.com/Yolanda-Li-Haoxian/react-blog-app(欢迎star)
+   源码地址：https://github.com/Yolanda-Li-Haoxian/react-blog-app （(欢迎star)）
 ### 运行
 1. 下载源码
     
