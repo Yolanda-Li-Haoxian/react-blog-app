@@ -1,58 +1,99 @@
 import React, {Component} from 'react';
-import {connect} from 'react-redux';
+
+import {Link} from 'react-router-dom';
+import moment from 'moment';
+import CONST_JSON from '../define_const_json';
 import '../styles/App.css';
-import 'antd/dist/antd.css';
-import TreeFrame from './DirectoryTree'
-import {Layout, Modal, Button} from 'antd';
-import BlogContent from "./Article";
-import {logout} from "../actions/user";
+import MainHeader from './MainHeader';
+import {Layout, List, Descriptions, Icon} from 'antd';
 
-const {Header, Content, Footer, Sider} = Layout;
-const {confirm} = Modal;
+import {getBlogArticles} from '../services/httpRequest';
 
-const mapStateToProps = state => ({
-    userName: state.user.userName
-});
+
+
+const {Content, Footer} = Layout;
+
+const IconText = ({type, text}) => (
+    <span>
+        <Icon type={type} style={{marginRight: 8}}/>
+        {text}
+    </span>
+);
 
 class Home extends Component {
-    onExit = () => {
-        confirm({
-            title: 'Do you Want to exit this current account?',
-            content: 'It will go to the login page.',
-            onOk: () => {
-                this.props.logout()
-            },
-            onCancel() {
-                //nothing
-            },
+    constructor(props) {
+        super(props);
+        this.state = {
+            articleList: [],
+            loading:true
+        };
+    }
+    componentWillMount() {
+        console.log('componentWillMount','props:'+this.props,'state:'+this.state)
+    }
+    componentDidMount() {
+        console.log('componentDidMount','props:'+this.props,'state:'+this.state);
+        getBlogArticles().then(response => {
+            this.setState({articleList: response,loading:false});
         });
-    };
+    }
+    componentWillReceiveProps(nextProps, nextContext) {
+        console.log('componentWillReceiveProps','nextProps:'+nextProps,'nextContext:'+nextContext);
+    }
+    shouldComponentUpdate(nextProps, nextState, nextContext) {
+        console.log('shouldComponentUpdate','nextProps:'+nextProps,'nextState:'+nextState,'nextContext:'+nextContext);
+        return true;
+    }
+    componentWillUpdate(nextProps, nextState, nextContext) {
+        console.log('componentWillUpdate','nextProps:'+nextProps,'nextState:'+nextState,'nextContext:'+nextContext);
+    }
+
+    componentDidUpdate(prevProps, prevState, snapshot) {
+        console.log('componentDidUpdate','prevProps:'+prevProps,'prevState:'+prevState,'snapshot:'+snapshot);
+    }
+
 
     render() {
-        const user = this.props.userName;
+        console.log('render');
+        const {articleList,loading} = this.state;
         return (
             <Layout style={{height: '100%'}}>
-                <Header className="header">
-                    <h1 style={{color: '#fff', display: 'inline-block'}}>Hello {user}</h1>
-                    <Button type='link' style={{float: 'right', lineHeight: 'inherit'}}
-                            onClick={this.onExit}>Exit</Button>
-                </Header>
-                <Content style={{padding: '0 50px', height: '100%'}}>
-                    <Layout style={{padding: '24px 0', background: '#fff', height: '100%'}}>
-                        <Sider width={300} style={{background: '#fff'}}>
-                            <TreeFrame/>
-                        </Sider>
-                        <Content style={{padding: '0 24px', minHeight: 280, height: '100%'}} id="scroll1">
-                            <BlogContent/>
-                        </Content>
-                    </Layout>
+                <MainHeader/>
+                <Content style={{padding: '0 50px', height: '100%', overflowY: 'auto'}}>
+                    <List dataSource={articleList} itemLayout='vertical' loading={loading}
+                          renderItem={item => (
+                              <List.Item key={item.id} actions={[
+                                  <IconText type="star-o" text={item.favorites}/>,
+                                  <IconText type="like-o" text={item.likes}/>,
+                                  <IconText type="message" text={item.commentsCount}/>,
+                              ]}>
+                                  <List.Item.Meta
+                                      title={<Link to={{
+                                          pathname: '/articleDetails',
+                                          search: JSON.stringify(item),
+                                          state: {article: item}
+                                      }}
+                                                   target='_blank'>{item.title}</Link>}
+                                      description={
+                                          <Descriptions>
+                                              <Descriptions.Item
+                                                  label="创建者">{item.author}</Descriptions.Item>
+                                              <Descriptions.Item
+                                                  label="创建时间">{moment(item.createAt).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                              <Descriptions.Item
+                                                  label="上次更新时间">{moment(item.lastUpdate).format('YYYY-MM-DD HH:mm:ss')}</Descriptions.Item>
+                                          </Descriptions>
+                                      }/>
+                              </List.Item>
+                          )}
+                    />
                 </Content>
-                <Footer style={{textAlign: 'center'}}>Blog Dev ©2019 Created by Yolanda Li</Footer>
+                <Footer style={{textAlign: 'center'}}>{CONST_JSON.FOOTER_WORDING}</Footer>
             </Layout>
         );
     }
 }
 
-export default connect(mapStateToProps, {logout})(Home);
+export default Home;
 
 

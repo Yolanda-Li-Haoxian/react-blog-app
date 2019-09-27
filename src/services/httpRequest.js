@@ -29,6 +29,7 @@ service.interceptors.response.use(function (response) {
     // Do something with response error
     return Promise.reject(error);
 });
+//tree
 export const getTreeDataSrv = (userId) => {
     return service.post('/api/blog/getTree',userId)
 };
@@ -44,6 +45,7 @@ export const updateArticleSrv = (node) => {
 export const updateFolder = (node) => {
     return service.post('/api/blog/updateFolder', node);
 };
+//user
 export const getUserById = (id) => {
     return service.post('/api/user/getUserById', {id});
 };
@@ -58,4 +60,22 @@ export const deleteUser = (id) => {
 };
 export const loginSrv = (userInfo)=>{
     return service1.post('/api/user/login', userInfo);
+}
+//blog articles
+export const getBlogArticles = ()=>{
+    return service.post('/api/blog/getBlogArticles');
+}
+
+//comment
+export const getCommentsByArticleId = (id)=>{
+    return service.post('/api/comment/getCommentsByArticleId',{articleId:id});
+}
+export const insertComment = (comment)=>{
+    return service.post('/api/comment/insertComment',comment);
+}
+export const updateComment = (para)=>{
+    return service.post('/api/comment/updateComment',para);
+}
+export const removeComment = (id)=>{
+    return service.post('/api/comment/removeComment',id);
 }

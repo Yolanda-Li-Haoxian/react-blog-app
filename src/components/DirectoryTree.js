@@ -4,7 +4,7 @@ import {connect} from 'react-redux';
 import 'antd/dist/antd.css';
 import {Tree, Icon, Menu, Input, Modal, message, Tooltip, Spin} from 'antd';
 import AddFileModal from './modal/AddFileModal';
-import {loadTreeData,deleteTreeNode} from '../actions/directoryTree';
+import {loadTreeData, deleteTreeNode} from '../actions/directoryTree';
 import {updateArticle} from '../actions/article';
 import {deleteTreeNodeById, insertTreeNode, updateFolder} from '../services/httpRequest';
 import {getGUID} from "../services/commenSrv";
@@ -15,6 +15,7 @@ const dataList = [];
 let editNode = {};
 const mapStateToProps = (state) => ({
     userId: state.user.id,
+    userName: state.user.userName,
     treeData: state.directoryTree.treeData,
     isLoading: state.directoryTree.isLoading
 });
@@ -222,12 +223,18 @@ class ArticlesTree extends Component {
     }
 
     _createTreeNode = (node) => {
-        const {treeData}=this.props;
+        const {treeData, userName} = this.props;
         const {selectedKey, modalType} = this.state;
         let createTime = new Date().toLocaleString();
-        let author = 'lhx';
         let guid = getGUID();
-        let newNode = {title: node.title, id: guid, type: modalType, date: createTime, author: author};
+        let newNode = {
+            title: node.title,
+            id: guid,
+            type: modalType,
+            createAt: createTime,
+            author: userName,
+            lastUpdate: createTime
+        };
         insertTreeNode(newNode).then(response => {
             if (insertNode(modalType, selectedKey, treeData, newNode)) {
                 modalType === 2 && this.props.updateArticle(newNode);
@@ -314,7 +321,7 @@ class ArticlesTree extends Component {
             });
         return (
             <>
-                <Search style={{marginBottom: 8}} placeholder="Search" onChange={this.onSearch}/>
+                <Search style={{marginBottom: 8}} placeholder="搜索" onChange={this.onSearch}/>
                 <Spin spinning={this.props.isLoading}>
                     <DirectoryTree onSelect={this.onSelect}
                                    onRightClick={this.onRightClick}
@@ -336,4 +343,4 @@ class ArticlesTree extends Component {
     }
 }
 
-export default connect(mapStateToProps, {loadTreeData,deleteTreeNode, updateArticle})(ArticlesTree);
+export default connect(mapStateToProps, {loadTreeData, deleteTreeNode, updateArticle})(ArticlesTree);

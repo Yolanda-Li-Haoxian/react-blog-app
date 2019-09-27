@@ -96,9 +96,9 @@ const Register = Form.create({name: 'register'})(
                 </Select>,
             );
             return (
-                <Card title="Register" headStyle={{textAlign: 'center'}} className="register-form">
+                <Card title="注册" headStyle={{textAlign: 'center'}} className="register-form">
                     <Form {...formItemLayout} onSubmit={this.handleSubmit}>
-                        <Form.Item label="E-mail">
+                        <Form.Item label="邮箱">
                             {getFieldDecorator('email', {
                                 rules: [
                                     {
@@ -107,17 +107,17 @@ const Register = Form.create({name: 'register'})(
                                     },
                                     {
                                         required: true,
-                                        message: 'Please input your E-mail.',
+                                        message: '请输入邮箱地址',
                                     },
                                 ],
                             })(<Input/>)}
                         </Form.Item>
-                        <Form.Item label="Password" hasFeedback>
+                        <Form.Item label="密码" hasFeedback>
                             {getFieldDecorator('password', {
                                 rules: [
                                     {
                                         required: true,
-                                        message: 'Please input your password.',
+                                        message: '请输入密码',
                                     },
                                     {
                                         validator: this.validateToNextPassword,
@@ -125,12 +125,12 @@ const Register = Form.create({name: 'register'})(
                                 ],
                             })(<Input.Password/>)}
                         </Form.Item>
-                        <Form.Item label="Confirm Password" hasFeedback>
+                        <Form.Item label="确认密码" hasFeedback>
                             {getFieldDecorator('confirm', {
                                 rules: [
                                     {
                                         required: true,
-                                        message: 'Please confirm your password.',
+                                        message: '请二次输入密码确认',
                                     },
                                     {
                                         validator: this.compareToFirstPassword,
@@ -141,7 +141,7 @@ const Register = Form.create({name: 'register'})(
                         <Form.Item
                             label={
                                 <span>
-              Nickname&nbsp;
+              昵称&nbsp;
                                     <Tooltip title="What do you want others to call you?">
                 <Icon type="question-circle-o"/>
               </Tooltip>
@@ -149,17 +149,17 @@ const Register = Form.create({name: 'register'})(
                             }
                         >
                             {getFieldDecorator('nickname', {
-                                rules: [{required: true, message: 'Please input your nickname.', whitespace: true}],
+                                rules: [{required: true, message: '请输入用户昵称', whitespace: true}],
                             })(<Input/>)}
                         </Form.Item>
-                        <Form.Item label="Phone Number">
+                        <Form.Item label="手机号">
                             {getFieldDecorator('phone', {
-                                rules: [{required: true, message: 'Please input your phone number.'}],
+                                rules: [{required: true, message: '请输入手机号码'}],
                             })(<Input addonBefore={prefixSelector} style={{width: '100%'}}/>)}
                         </Form.Item>
                         <Form.Item {...tailFormItemLayout}>
                             <Button type="primary" htmlType="submit">
-                                Register
+                                立即注册
                             </Button>
                         </Form.Item>
                     </Form>
